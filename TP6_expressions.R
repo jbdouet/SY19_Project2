@@ -41,13 +41,13 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   train_xy <- data_expressions[-test_i, ]
   test_xy <- data_expressions[test_i, ]
   print(k)
-  model_svmLinear <- train(train_xy[,1:4200],train_xy$y,method='svmLinear',trControl= trainControl(
+  model_svmLinear <- caret::train(train_xy[,1:4200],train_xy$y,method='svmLinear',trControl= trainControl(
     method = "cv",
     number =10,
     verboseIter = TRUE))
   predictions_svmLinear<-predict.train(object=model_svmLinear,test_xy[,1:4200])
-  cf<-confusionMatrix(predictions_svmLinear,test_xy$y) 
-  CV[k]<- cf$overall["Accuracy"]
+  cf_svmLinear<-caret::confusionMatrix(data= predictions_svmLinear,reference=test_xy$y) 
+  CV[k]<- cf_svmLinear$overall["Accuracy"]
 }
 CVerror= sum(CV)/length(CV)
 CV
@@ -74,13 +74,13 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   train_xy <- data_expressions[-test_i, ]
   test_xy <- data_expressions[test_i, ]
   print(k)
-  model_svmRadial <- train(train_xy[,1:4200],train_xy$y,method='rf',trControl= trainControl(
+  model_svmRadial <- caret::train(train_xy[,1:4200],train_xy$y,method='mlp',trControl= trainControl(
     method = "cv",
     number =10,
     verboseIter = TRUE))
   predictions_svmRadial<-predict.train(object=model_svmRadial,test_xy[,1:4200])
-  cf<-confusionMatrix(predictions_svmRadial,test_xy$y) 
-  CV[k]<- cf$overall["Accuracy"]
+  cf_svmRadial<-caret::confusionMatrix(data= predictions_svmRadial,reference=test_xy$y) 
+  CV[k]<- cf_svmLinear$overall["Accuracy"]
 }
 CVerror= sum(CV)/length(CV)
 CV
@@ -89,6 +89,9 @@ dim(train_xy)
 dim(test_xy)
 dim(data_expressions)
 test_xy$y
+cf
+TEST <-confusionMatrix(test_xy$y,predictions_svmRadial)
+TEST$
 predictions_svmRadial
 I<-matrix(as.matrix(test_xy[4,1:4200]),60,70)
 I1 <- apply(I, 1, rev)
