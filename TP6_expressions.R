@@ -20,6 +20,7 @@ n=nrow(data_expressions)
 ntrain=ceiling(n*2/3)
 ntst=n-ntrain
 train<-sample(1:n,ntrain)
+
 data_expressions.test<-data_expressions[-train,]
 data_expressions.train<-data_expressions[train,]
 
@@ -60,6 +61,7 @@ I1 <- apply(I, 1, rev)
 image(t(I1),col=gray(0:255 / 255))
 
 
+
 #################### SVM radial #################### 
 #data_expressions$y <- as.factor(as.integer(data_expressions))
 
@@ -82,6 +84,7 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   cf_svmRadial<-caret::confusionMatrix(data= predictions_svmRadial,reference=test_xy$y) 
   CV[k]<- cf_svmLinear$overall["Accuracy"]
 }
+cf_svmRadial
 CVerror= sum(CV)/length(CV)
 CV
 CVerror
@@ -89,9 +92,9 @@ dim(train_xy)
 dim(test_xy)
 dim(data_expressions)
 test_xy$y
+predictions_svmRadial
 cf
 TEST <-confusionMatrix(test_xy$y,predictions_svmRadial)
-TEST$
 predictions_svmRadial
 I<-matrix(as.matrix(test_xy[4,1:4200]),60,70)
 I1 <- apply(I, 1, rev)
@@ -101,6 +104,116 @@ image(t(I1),col=gray(0:255 / 255))
 
 
 
-
-
 ################## XGBOOST ################## 
+
+library(xgboost)
+library(readr)
+library(stringr)
+library(caret)
+library(car)
+
+
+################## Keras - CNN ##################
+library(keras)
+use_backend(backend = "tensorflow")
+use_condaenv("r-tensorflow",required = TRUE )
+
+# Input image dimensions
+img_rows <- 60
+img_cols <- 70
+
+X_train <- data_expressions.train[,1:4200]
+X_test <- data_expressions.test[,1:4200]
+y_train <-  data_expressions.train$y
+y_test <-  data_expressions.test$y
+
+# reshapes for dense layers
+X_train1<- array_reshape(unname(X_train), dim=c(dim(X_train)[1], dim(X_train)[2])) 
+X_test1<- array_reshape(unname(X_test), dim=c(dim(X_test)[1], dim(X_test)[2])) 
+# rescale
+X_train1 <- X_train / 255
+X_test1 <- X_test / 255
+
+#reshapes for cnn layers 
+X_train2 <- array_reshape(unname(X_train), c(nrow(X_train), img_rows, img_cols, 1))
+X_test2 <- array_reshape(unname(X_test), c(nrow(X_test), img_rows, img_cols, 1))
+
+input_shape <- c(img_rows, img_cols, 1)
+
+# transforms labels in vectors
+y_train_cat <- to_categorical(y_train)
+y_test_cat <- to_categorical(y_test)
+
+y_train_cat2 <- y_train_cat[,2:7]
+y_test_cat2 <- y_test_cat[,2:7]
+
+#nb of classes
+num_classes=6
+
+model <- keras_model_sequential() 
+model %>% 
+  #layer_dense(units = 10, activation = 'relu', input_shape = c(4200)) %>% 
+  layer_conv_2d(filters = 32, kernel_size = c(3,3), activation = 'relu',
+                input_shape = input_shape) %>% 
+  layer_conv_2d(filters = 64, kernel_size = c(3,3), activation = 'relu') %>% 
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>% 
+  layer_dropout(rate = 0.25) %>% 
+  layer_flatten() %>% 
+  layer_dense(units = 128, activation = 'relu') %>% 
+  layer_dropout(rate = 0.5) %>% 
+  layer_dense(units = num_classes, activation = 'softmax')
+
+summary(model)
+
+opt <- optimizer_rmsprop(lr = 0.0001, decay = 1e-6)
+
+model %>% compile(
+  loss = 'categorical_crossentropy',
+  optimizer = opt,
+  metrics = c('accuracy')
+)
+
+history <- model %>% fit(
+  X_train2, y_train_cat2, 
+  epochs = 100, batch_size = 1, 
+  validation_split = 0.2
+)
+
+model %>% evaluate(X_test2, y_test_cat2)
+
+model %>% predict_classes(X_test)
+y_test
+################## H2O - CNN ################## 
+
+library(h2o)
+
+#start a local h2o cluster
+local.h2o <- h2o.init(ip = "localhost", port = 54321, startH2O = TRUE, nthreads=-1)
+
+# pass dataframe from inside of the R environment to the H2O instance
+
+trData<-as.h2o(data_expressions.train)
+tsData<-as.h2o(data_expressions.test)
+
+head(trData)
+
+res.dl <- h2o.deeplearning(x = 1:4200, y = 4201, trData, activation = "Tanh", hidden=rep(160,5),epochs = 100)
+
+#use model to predict testing dataset
+pred.dl<-h2o.predict(object=res.dl, newdata=tsData[,1:4200])
+pred.dl.df<-as.data.frame(pred.dl)
+
+summary(pred.dl)
+test_labels<-data_expressions.test[,4201]
+
+#calculate number of correct prediction
+sum(diag(table(test_labels,pred.dl.df[,1])))
+table(test_labels,pred.dl.df[,1])
+length(test_labels)
+28/36
+h2o.shutdown(prompt = FALSE)
+
+
+
+
+
