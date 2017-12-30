@@ -14,6 +14,11 @@ I1 <- apply(I, 1, rev)
 image(t(I1),col=gray(0:255 / 255))
 #image(matrix(unlist(I1),ncol=70, byrow =TRUE ),col=gray(0:255 / 255))
 
+
+dim(X_expressions)
+dim(X_expressions[complete.cases(X_expressions), ])
+dim(na.omit(X_expressions))
+tst <-na.omit(unname(X_expressions))
 #### Separation train-test
 
 n=nrow(data_expressions)
@@ -32,7 +37,7 @@ data_expressions.train<-data_expressions[train,]
 #data_expressions$y <- as.factor(as.integer(data_expressions))
 
 n_folds <- 10
-folds_i <- sample(rep(1:n_folds, length.out = ntrain)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
 table(folds_i) # Pas le même nombre d'éléments 
 CV<-rep(0,10)
 for (k in 1:n_folds) {# we loop on the number of folds, to build k models
@@ -50,12 +55,12 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   cf_svmLinear<-caret::confusionMatrix(data= predictions_svmLinear,reference=test_xy$y) 
   CV[k]<- cf_svmLinear$overall["Accuracy"]
 }
+dim(train_xy)
 CVerror= sum(CV)/length(CV)
 CV
-CVerror
-cf
-test_xy$y
+CVerror # 0.74
 predictions_svmLinear
+test_xy$y
 I<-matrix(as.matrix(test_xy[4,1:4200]),60,70)
 I1 <- apply(I, 1, rev)
 image(t(I1),col=gray(0:255 / 255))
@@ -65,8 +70,8 @@ image(t(I1),col=gray(0:255 / 255))
 #################### SVM radial #################### 
 #data_expressions$y <- as.factor(as.integer(data_expressions))
 
-n_folds <- 1
-folds_i <- sample(rep(1:n_folds, length.out = 36)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
 table(folds_i) # Pas le même nombre d'éléments 
 CV<-rep(0,n_folds)
 for (k in 1:n_folds) {# we loop on the number of folds, to build k models
@@ -76,14 +81,15 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   train_xy <- data_expressions[-test_i, ]
   test_xy <- data_expressions[test_i, ]
   print(k)
-  model_svmRadial <- caret::train(train_xy[,1:4200],train_xy$y,method='mlp',trControl= trainControl(
+  model_svmRadial <- caret::train(train_xy[,1:4200],train_xy$y,method='svmPoly',trControl= trainControl(
     method = "cv",
     number =10,
     verboseIter = TRUE))
   predictions_svmRadial<-predict.train(object=model_svmRadial,test_xy[,1:4200])
   cf_svmRadial<-caret::confusionMatrix(data= predictions_svmRadial,reference=test_xy$y) 
-  CV[k]<- cf_svmLinear$overall["Accuracy"]
+  CV[k]<- cf_svmRadial$overall["Accuracy"]
 }
+train_xy
 cf_svmRadial
 CVerror= sum(CV)/length(CV)
 CV
@@ -103,7 +109,59 @@ image(t(I1),col=gray(0:255 / 255))
 
 
 
+#################### Random Forest #################### 
 
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
+table(folds_i) # Pas le même nombre d'éléments 
+CV<-rep(0,n_folds)
+for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  test_i <- which(folds_i == k)
+  # les datasets entre le fit et le predict doivent être les mêmes car c'est le même dataset que l'on divise en k-fold 
+  # on peut utiliser le data set complet ou seulement le train et avoir une idée finale de la performance sur le test
+  train_xy <- data_expressions[-test_i, ]
+  test_xy <- data_expressions[test_i, ]
+  print(k)
+  model_rf <- caret::train(train_xy[,1:4200],train_xy$y,method='rf',trControl= trainControl(
+    method = "cv",
+    number =10,
+    verboseIter = TRUE))
+  predictions_rf<-predict.train(object=model_rf,test_xy[,1:4200])
+  cf_rf<-caret::confusionMatrix(data= predictions_rf,reference=test_xy$y) 
+  CV[k]<- cf_rf$overall["Accuracy"]
+}
+
+cf_svmRadial
+CVerror= sum(CV)/length(CV)
+CV
+CVerror
+
+#################### Boosted classification trees #################### 
+
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
+table(folds_i) # Pas le même nombre d'éléments 
+CV<-rep(0,n_folds)
+for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  test_i <- which(folds_i == k)
+  # les datasets entre le fit et le predict doivent être les mêmes car c'est le même dataset que l'on divise en k-fold 
+  # on peut utiliser le data set complet ou seulement le train et avoir une idée finale de la performance sur le test
+  train_xy <- data_expressions[-test_i, ]
+  test_xy <- data_expressions[test_i, ]
+  print(k)
+  model_ada <- caret::train(train_xy[,1:4200],train_xy$y,method='ada',trControl= trainControl(
+    method = "cv",
+    number =10,
+    verboseIter = TRUE))
+  predictions_ada<-predict.train(object=model_ada,test_xy[,1:4200])
+  cf_ada<-caret::confusionMatrix(data= predictions_ada,reference=test_xy$y) 
+  CV[k]<- cf_ada$overall["Accuracy"]
+}
+
+cf_ada
+CVerror= sum(CV)/length(CV)
+CV
+CVerror
 ################## XGBOOST ################## 
 
 library(xgboost)
@@ -112,7 +170,11 @@ library(stringr)
 library(caret)
 library(car)
 
-
+# Except the y vector, all the feature are numerical so we do not need any transformation there
+#sparse_matrix <- sparse.model.matrix(response ~ .-1, data = campaign)
+df_X<- X_expressions
+sparse_matrix <- sparse.model.matrix(response ~ .-1, data = campaign)
+output_vector = df[,response] == "Responder"
 ################## Keras - CNN ##################
 library(keras)
 use_backend(backend = "tensorflow")
