@@ -9,6 +9,7 @@ library(car)
 library("e1071")
 library(randomForest)
 library(kernlab)
+library(stats)
 
 
 character_data <- read.csv("data/characters_train.txt", sep =" ")
