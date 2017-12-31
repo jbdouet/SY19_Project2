@@ -5,6 +5,7 @@
 ################################################################################################
 ################################################################################################
 library(caret)
+library(car)
 library("e1071")
 library(randomForest)
 library(kernlab)
@@ -113,6 +114,30 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
 CVerror= sum(CV)/length(CV)
 CV
 CVerror#0.70
+
+#QDA
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
+table(folds_i) # Pas le même nombre d'éléments 
+CV<-rep(0,10)
+for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  test_i <- which(folds_i == k)
+  # les datasets entre le fit et le predict doivent être les mêmes car c'est le même dataset que l'on divise en k-fold 
+  # on peut utiliser le data set complet ou seulement le train et avoir une idée finale de la performance sur le test
+  train_xy <- character[-test_i, ]
+  test_xy <- character[test_i, ]
+  print(k)
+  model_lda <- train(train_xy[,-1],train_xy$Y,method='qda',trControl= trainControl(
+    method = "cv",
+    number =10,
+    verboseIter = TRUE))
+  predictions_lda<-predict.train(object=model_lda,test_xy[,-1])
+  cf<-confusionMatrix(predictions_lda,test_xy$Y) 
+  CV[k]<- cf$overall["Accuracy"]
+}
+CVerror= sum(CV)/length(CV)
+CV
+CVerror#0.88
 
 
 #RDA
@@ -301,3 +326,5 @@ plot(x = mydata$PC1, y = mydata$PC2, col= mydata$Species)#on voit que certains g
 
 pairs(princomp(parole[,-257])$scores[,1:5], col=parole$y,
       main="Scatterplot après ACP sur les 5 C.P. (classes visibles par couleur)")
+
+car::leveneTest(Y ~., data=character)
