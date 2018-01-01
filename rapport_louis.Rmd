@@ -19,7 +19,7 @@ options(Encoding="UTF-8")
 
 Dans ce TP, nous disposons de trois jeux de données. Le premier représente des expressions de visage, le second des lettres de l'alphabet et le troisième des sons. Le but est alors de trouver des classifieurs efficaces pour ces trois jeux de données en utilisant des méthodes d'apprentissage supervisé.
 
-## Parole
+## Character
 ### Analyse
 
 Nous commençons dans un premier temps par analyser notre jeu de données. Grâce à la commande 'summary', nous pouvons voir que chaque élément est décrit par 16 variables quantitatives et que nos individus vont logiquement être divisés en 26 classes représentant l'alphabet. On note également que les variables semblent issues d'une loi centrée autour de 0. Enfin les individus sont repartis assez équitablement dans les differentes classes. 
@@ -84,3 +84,18 @@ Voici les résultats de précision obtenus pour les differentes méthodes testé
   
 Comme prévu, les méthodes simples et linéaires sont celles qui nous donnent les classifieurs les moins précis. Naive-Bayes est ici peu performant ce qui pourrait s'expliquer par une trop grande corrélation entre plusieurs prédicteurs.  
 Nous avons alors ensuite ajouté une partie de traitement des données avec l'ACP. En effet, notamment pour améliorer les résultats de modèles comme Naive-Bayes nous avons appliqué l'ACP pour réduire les dimensions de notre jeu de données. Cependant, quel que soit le modèle auquel on a appliqué l'ACP, le résultat de notre classifieur devenait moins bon. Ceci s'explique par le fonctionnement de ce traitement. En effet, l'ACP prend en compte seulement les coordonnées des points de nos données. L'ACP peut donc supprimer des informations qui sont pourtant importantes pour classifier nos données. En fonction de notre jeu de données ce processus de construction peut mener à de mauvaises composantes n'expliquant pas bien nos classes et donc résultant en des classifieurs moins performants. C'est pour cette raison que cette phase de traitement n'a pas été maintenue pour notre classifieur final.
+
+### Conclusion
+
+Après le test de nos différents modèles et même de l'ajout d'une phase de traitement des données, les résultats obtenus par validation croisée nous permet de choisir le meilleur classifieur pour ce jeu de données. Ainsi c'est le randomForest qui nous donne le meilleur résultat avec une erreur de seulement 6.6% ce qui est assez satisfaisant. 
+
+
+## Paroles
+
+### Analyse
+
+Comme pour le jeu de données précédent, nous commençons par analyser notre jeu de données avec la commande 'summary'. Nous avons donc près de 2500 individus caractérisés par 256 variables. Ces individus sont répartis dans cinq classes.  
+```{r }
+table(parole$y)
+```
+Nous pouvons voir que les différentes classes ne contiennent pas le même nombre d'individus mais les différences sont relativement faibles (entre 16 et 26%). On note également que les variables semblent issues d'une loi centrée autour de 0.
