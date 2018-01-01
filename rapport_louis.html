@@ -145,7 +145,7 @@ $(document).ready(function () {
 <div id="application" class="section level3">
 <h3>Application</h3>
 <p>Dans un premier temps, nous allons appliquer simplement plusieurs méthodes conjointement avec la validation croisée pour obtenir des résultats comparrables et significatifs. Nous commençons donc par diviser nos données en deux parties, un ensemble train comportant les deux tiers des données et un ensemble de test comportant le reste.</p>
-<p>Une fois la séparation faite, nous mettons en place une validation croisée. Nous divisons alors nos données en dix parties Ainsi nous pouvons entrainer notre modèle sur une partie de nos données et ensuite prédire les données de test. On fait alors une moyenne des résultats que nous avons obtenu pour obtenir une erreur stable et significative.</p>
+<p>Une fois la séparation faite, nous mettons en place une validation croisée. Nous divisons alors nos données en dix parties de même taille. Ainsi nous pouvons entrainer notre modèle sur une partie de nos données et ensuite prédire les données de test. On fait alors une moyenne des résultats que nous avons obtenu pour obtenir une erreur stable et significative qu’on utilisera pour comparer nos differentes méthodes et ensuite choisir celle qui nous donne la plus petite erreur.</p>
 <p>Après avoir testé nos differents modèles, nous avons également mis en place une méthode de réduction de la dimension (ACP). Les données étant déjà centrées autour de 0 et avec des valeurs assez proches, nous n’avons ni besoin de normaliser ces données ni de les redimensionner avant d’appliquer l’ACP.</p>
 <p>Pour ce jeu de données, c’est le modèle du random foret qui a donné le meilleur résultat.</p>
 <pre class="r"><code>n_folds &lt;- 10
@@ -163,6 +163,19 @@ for (k in 1:n_folds) {
 }
 CVerror= sum(CV)/length(CV)</code></pre>
 <p>En effet, pour ce jeu de données les méthodes de résolution linéaire sont moins efficaces. C’est pour cette raison que le LDA a des performances moindres comparé au random forest qui est moins dépendant des variables. De même on peut remarquer que le QDA nous donne de meilleures performances que le LDA. Ceci est probablement expliqué par le fait que les variables n’ont pas les mêmes matrices de variance-covariance. Dans ce cas, les méthodes linéaires comme le LDA sont beaucoup moins efficaces pour differencier les differentes classes. Dans ce cas de figure, les méthodes quadratiques comme le QDA ainsi que d’autres méthodes moins dépendantes de cette caractéristique comme le random forest nous donne de meilleurs résultats.</p>
+</div>
+<div id="resultats" class="section level3">
+<h3>Résultats</h3>
+<p>Voici les résultats obtenus pour les differentes méthodes testées:</p>
+<ul>
+<li>RandomForest: 0.9343</li>
+<li>SVM: 0.913</li>
+<li>Naive-Bayes: 0.69</li>
+<li>LDA: 0.70</li>
+<li>QDA: 0.88</li>
+<li>RDA: 0.87</li>
+</ul>
+<p>Coucou</p>
 </div>
 </div>
 

@@ -116,6 +116,7 @@ CVerror= sum(CV)/length(CV)
 CV
 CVerror#0.70
 
+
 #QDA
 n_folds <- 10
 folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
@@ -128,7 +129,7 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   train_xy <- character[-test_i, ]
   test_xy <- character[test_i, ]
   print(k)
-  model_lda <- train(train_xy[,-1],train_xy$Y,method='qda',trControl= trainControl(
+  model_lda <- train(train_xy[,-1],train_xy$Y,method='qda'),trControl= trainControl(
     method = "cv",
     number =10,
     verboseIter = TRUE))
