@@ -99,3 +99,10 @@ Comme pour le jeu de données précédent, nous commençons par analyser notre j
 table(parole$y)
 ```
 Nous pouvons voir que les différentes classes ne contiennent pas le même nombre d'individus mais les différences sont relativement faibles (entre 16 et 26%). On note également que les variables semblent issues d'une loi centrée autour de 0.
+
+### Approche
+
+Nous allons aborder ce problème de la même manière que le précédent. Nous allons comparer différents modèles en comparant l'erreur issue de la validation croisée et pourrons ainsi choisir notre meilleur classifieur pour ce jeu de données.
+
+### Application
+
