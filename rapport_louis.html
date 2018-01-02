@@ -124,13 +124,13 @@ $(document).ready(function () {
 
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
-<p>Dans ce TP, nous disposons de trois jeux de données. Le premier représente des expressions de visage, le second des lettres de l’alphabet et le troisième des sons. Le but est alors de trouver des classifieurs efficaces pour ces trois jeux de données en utilisant des méthodes d’apprentissage supervisé.</p>
+<p>Dans ce TP, nous disposons de trois jeux de donnÃ©es. Le premier reprÃ©sente des expressions de visage, le second des lettres de l’alphabet et le troisiÃ¨me des sons. Le but est alors de trouver des classifieurs efficaces pour ces trois jeux de donnÃ©es en utilisant des mÃ©thodes d’apprentissage supervisÃ©.</p>
 </div>
-<div id="parole" class="section level2">
-<h2>Parole</h2>
+<div id="character" class="section level2">
+<h2>Character</h2>
 <div id="analyse" class="section level3">
 <h3>Analyse</h3>
-<p>Nous commençons dans un premier temps par analyser notre jeu de données. Grâce à la commande ‘summary’, nous pouvons voir que chaque élément est décrit par 16 variables quantitatives et que nos individus vont logiquement être divisés en 26 classes représentant l’alphabet. On note également que les variables semblent issues d’une loi centrée autour de 0. Enfin les individus sont repartis assez équitablement dans les differentes classes.</p>
+<p>Nous commenÃ§ons dans un premier temps par analyser notre jeu de donnÃ©es. GrÃ¢ce Ã  la commande ‘summary’, nous pouvons voir que chaque Ã©lÃ©ment est dÃ©crit par 16 variables quantitatives et que nos individus vont logiquement Ãªtre divisÃ©s en 26 classes reprÃ©sentant l’alphabet. On note Ã©galement que les variables semblent issues d’une loi centrÃ©e autour de 0. Enfin les individus sont repartis assez Ã©quitablement dans les differentes classes.</p>
 <pre class="r"><code>table(character_data$Y)</code></pre>
 <pre><code>## 
 ##   A   B   C   D   E   F   G   H   I   J   K   L   M   N   O   P   Q   R 
@@ -140,14 +140,14 @@ $(document).ready(function () {
 </div>
 <div id="approche" class="section level3">
 <h3>Approche</h3>
-<p>Pour trouver le meilleur classifieur pour ces données, nous allons appliquer plusieurs méthodes étudiées en cours. Nous pourrons alors comparer l’efficacité de ces méthodes en comparant l’erreur de chaque classifieur fournie par validation croisée. Nous allons détailler certaines méthodes ci-dessous et l’ensemble des méthodes appliquées avec leurs résultats seront présentées ultérieurement dans un tableau récapitulatif.</p>
+<p>Pour trouver le meilleur classifieur pour ces donnÃ©es, nous allons appliquer plusieurs mÃ©thodes Ã©tudiÃ©es en cours. Nous pourrons alors comparer l’efficacitÃ© de ces mÃ©thodes en comparant l’erreur de chaque classifieur fournie par validation croisÃ©e. Nous allons dÃ©tailler certaines mÃ©thodes ci-dessous et l’ensemble des mÃ©thodes appliquÃ©es avec leurs rÃ©sultats seront prÃ©sentÃ©es ultÃ©rieurement dans un tableau rÃ©capitulatif.</p>
 </div>
 <div id="application" class="section level3">
 <h3>Application</h3>
-<p>Dans un premier temps, nous allons appliquer simplement plusieurs méthodes conjointement avec la validation croisée pour obtenir des résultats comparrables et significatifs. Nous commençons donc par diviser nos données en deux parties, un ensemble train comportant les deux tiers des données et un ensemble de test comportant le reste.</p>
-<p>Une fois la séparation faite, nous mettons en place une validation croisée. Nous divisons alors nos données en dix parties de même taille. Ainsi nous pouvons entrainer notre modèle sur une partie de nos données et ensuite prédire les données de test. On fait alors une moyenne des résultats que nous avons obtenu pour obtenir une erreur stable et significative qu’on utilisera pour comparer nos differentes méthodes et ensuite choisir celle qui nous donne la plus petite erreur.</p>
-<p>Après avoir testé nos differents modèles, nous avons également mis en place une méthode de réduction de la dimension (ACP). Les données étant déjà centrées autour de 0 et avec des valeurs assez proches, nous n’avons ni besoin de normaliser ces données ni de les redimensionner avant d’appliquer l’ACP.</p>
-<p>Pour ce jeu de données, c’est le modèle du random foret qui a donné le meilleur résultat.</p>
+<p>Dans un premier temps, nous allons appliquer simplement plusieurs mÃ©thodes conjointement avec la validation croisÃ©e pour obtenir des rÃ©sultats comparables et significatifs. Nous commenÃ§ons donc par diviser nos donnÃ©es en deux parties, un ensemble train comportant les deux tiers des donnÃ©es et un ensemble de test comportant le reste.</p>
+<p>Une fois la sÃ©paration faite, nous pouvons alors commencer Ã  tester diffÃ©rents modÃ¨les pour avoir une premiÃ¨re idÃ©e des performances de chacun. Pour cela, on entraine notre modÃ¨le sur la partie ‘train’ et nous prÃ©disons nos classes sur la partie ‘test’. Cependant, pour comparer les diffÃ©rentes mÃ©thodes il est plus judicieux d’avoir recours Ã  la validation croisÃ©e. Nous mettons alors en place ce systÃ¨me qui nous permettra d’avoir des rÃ©sultats plus significatifs pour comparer nos classifieurs. Nous divisons alors nos donnÃ©es en dix parties de mÃªme taille, Ã  chaque itÃ©ration de notre boucle nous entraÃ®nons notre modÃ¨le sur la partie des donnÃ©es de ‘train’ et ensuite nous pouvons prÃ©dire les donnÃ©es de test. A chaque itÃ©ration un nouvel ensemble de ‘test’ et donc de ‘train’ sont utilisÃ©s. On fait alors une moyenne des rÃ©sultats que nous avons obtenu pour obtenir une erreur stable et significative qu’on utilisera pour comparer nos differentes mÃ©thodes et ensuite choisir celle qui nous donne la plus petite erreur.</p>
+<p>AprÃ¨s avoir testÃ© nos differents modÃ¨les, nous avons Ã©galement mis en place une mÃ©thode de rÃ©duction de la dimension (ACP). Les donnÃ©es Ã©tant dÃ©jÃ  centrÃ©es autour de 0 et avec des valeurs assez proches, nous n’avons ni besoin de normaliser ces donnÃ©es ni de les redimensionner avant d’appliquer l’ACP.</p>
+<p>Pour ce jeu de donnÃ©es, c’est le modÃ¨le du random foret qui a donnÃ© le meilleur rÃ©sultat.</p>
 <pre class="r"><code>n_folds &lt;- 10
 folds_i &lt;- sample(rep(1:n_folds, length.out = n)) 
 CV&lt;-rep(0,10)
@@ -162,11 +162,11 @@ for (k in 1:n_folds) {
   CV[k]&lt;- sum(diag(cm)) / sum(cm)
 }
 CVerror= sum(CV)/length(CV)</code></pre>
-<p>En effet, pour ce jeu de données les méthodes de résolution linéaire sont moins efficaces. C’est pour cette raison que le LDA a des performances moindres comparé au random forest qui est moins dépendant des variables. De même on peut remarquer que le QDA nous donne de meilleures performances que le LDA. Ceci est probablement expliqué par le fait que les variables n’ont pas les mêmes matrices de variance-covariance. Dans ce cas, les méthodes linéaires comme le LDA sont beaucoup moins efficaces pour differencier les differentes classes. Dans ce cas de figure, les méthodes quadratiques comme le QDA ainsi que d’autres méthodes moins dépendantes de cette caractéristique comme le random forest nous donne de meilleurs résultats.</p>
+<p>En effet, pour ce jeu de donnÃ©es les mÃ©thodes de rÃ©solution linÃ©aire sont moins efficaces. C’est pour cette raison que le LDA a des performances moindres comparÃ© au random forest qui est moins dÃ©pendant des variables. De mÃªme on peut remarquer que le QDA nous donne de meilleures performances que le LDA. Ceci est probablement expliquÃ© par le fait que les variables n’ont pas les mÃªmes matrices de variance-covariance. Dans ce cas, les mÃ©thodes linÃ©aires comme le LDA sont beaucoup moins efficaces pour differencier les differentes classes. Dans ce cas de figure, les mÃ©thodes quadratiques comme le QDA ainsi que d’autres mÃ©thodes moins dÃ©pendantes de cette caractÃ©ristique comme le random forest nous donne de meilleurs rÃ©sultats.</p>
 </div>
-<div id="resultats" class="section level3">
-<h3>Résultats</h3>
-<p>Voici les résultats obtenus pour les differentes méthodes testées:</p>
+<div id="rasultats" class="section level3">
+<h3>RÃ©sultats</h3>
+<p>Voici les rÃ©sultats de prÃ©cision obtenus pour les differentes mÃ©thodes testÃ©es:</p>
 <ul>
 <li>RandomForest: 0.9343</li>
 <li>SVM: 0.913</li>
@@ -174,8 +174,72 @@ CVerror= sum(CV)/length(CV)</code></pre>
 <li>LDA: 0.70</li>
 <li>QDA: 0.88</li>
 <li>RDA: 0.87</li>
+<li>SVM + PCA: 0.71</li>
+<li>Naive-Bayes + PCA: 0.64</li>
+<li>LDA + PCA: 0.65</li>
+<li>QDA + PCA: 0.68</li>
 </ul>
-<p>Coucou</p>
+<p>Comme prÃ©vu, les mÃ©thodes simples et linÃ©aires sont celles qui nous donnent les classifieurs les moins prÃ©cis. Naive-Bayes est ici peu performant ce qui pourrait s’expliquer par une trop grande corrÃ©lation entre plusieurs prÃ©dicteurs.<br />
+Nous avons alors ensuite ajoutÃ© une partie de traitement des donnÃ©es avec l’ACP. En effet, notamment pour amÃ©liorer les rÃ©sultats de modÃ¨les comme Naive-Bayes nous avons appliquÃ© l’ACP pour rÃ©duire les dimensions de notre jeu de donnÃ©es. Cependant, quel que soit le modÃ¨le auquel on a appliquÃ© l’ACP, le rÃ©sultat de notre classifieur devenait moins bon. Ceci s’explique par le fonctionnement de ce traitement. En effet, l’ACP prend en compte seulement les coordonnÃ©es des points de nos donnÃ©es. L’ACP peut donc supprimer des informations qui sont pourtant importantes pour classifier nos donnÃ©es. En fonction de notre jeu de donnÃ©es ce processus de construction peut mener Ã  de mauvaises composantes n’expliquant pas bien nos classes et donc rÃ©sultant en des classifieurs moins performants. C’est pour cette raison que cette phase de traitement n’a pas Ã©tÃ© maintenue pour notre classifieur final.</p>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>AprÃ¨s le test de nos diffÃ©rents modÃ¨les et mÃªme de l’ajout d’une phase de traitement des donnÃ©es, les rÃ©sultats obtenus par validation croisÃ©e nous permet de choisir le meilleur classifieur pour ce jeu de donnÃ©es. Ainsi c’est le randomForest qui nous donne le meilleur rÃ©sultat avec une erreur de seulement 6.6% ce qui est assez satisfaisant.</p>
+</div>
+</div>
+<div id="paroles" class="section level2">
+<h2>Paroles</h2>
+<div id="analyse-1" class="section level3">
+<h3>Analyse</h3>
+<p>Comme pour le jeu de donnÃ©es prÃ©cÃ©dent, nous commenÃ§ons par analyser notre jeu de donnÃ©es avec la commande ‘summary’. Nous avons donc prÃ¨s de 2500 individus caractÃ©risÃ©s par 256 variables. Ces individus sont rÃ©partis dans cinq classes.</p>
+<pre class="r"><code>table(parole$y)</code></pre>
+<pre><code>## 
+##  aa  ao dcl  iy  sh 
+## 365 500 370 588 427</code></pre>
+<p>Nous pouvons voir que les diffÃ©rentes classes ne contiennent pas le mÃªme nombre d’individus mais les diffÃ©rences sont relativement faibles (entre 16 et 26%). On note Ã©galement que les variables semblent issues d’une loi centrÃ©e autour de 0.</p>
+</div>
+<div id="approche-1" class="section level3">
+<h3>Approche</h3>
+<p>Nous allons aborder ce problÃ¨me de la mÃªme maniÃ¨re que le prÃ©cÃ©dent. Nous allons comparer diffÃ©rents modÃ¨les en comparant l’erreur issue de la validation croisÃ©e et pourrons ainsi choisir notre meilleur classifieur pour ce jeu de donnÃ©es.</p>
+</div>
+<div id="application-1" class="section level3">
+<h3>Application</h3>
+<p>De la mÃªme maniÃ¨re que pour le jeu de donnÃ©es prÃ©cÃ©dent, nous allons crÃ©er notre boucle de validation croisÃ©e de dix itÃ©rations et Ã  l’intÃ©rieur de celles ci nous allons entraÃ®ner et tester nos modÃ¨les.<br />
+De mÃªme, nous avons Ã©galement mis en place une mÃ©thode de rÃ©duction de la dimension (ACP). Les donnÃ©es Ã©tant dÃ©jÃ  centrÃ©es autour de 0 et avec des valeurs assez proches, nous n’avons ni besoin de normaliser ces donnÃ©es ni de les redimensionner avant d’appliquer l’ACP.</p>
+<pre class="r"><code>n_folds &lt;- 10
+folds_i &lt;- sample(rep(1:n_folds, length.out = n))
+CV&lt;-rep(0,10)
+for (k in 1:n_folds) {
+  test_i &lt;- which(folds_i == k)
+  train_xy &lt;- parole[-test_i, ]
+  test_xy &lt;- parole[test_i, ]
+  svm_train &lt;- svm(y ~ ., data = train_xy)
+  pred_svm&lt;-predict(svm_train, newdata = test_xy, type = &quot;response&quot;)
+  prop.table(table(test_xy$y,pred_svm))
+  cm= as.matrix(table(test_xy$y,pred_svm))
+  CV[k]&lt;- sum(diag(cm)) / sum(cm)
+}
+CVerror= sum(CV)/length(CV)
+CV</code></pre>
+<pre><code>##  [1] 0.9244444 0.9466667 0.8888889 0.9244444 0.9377778 0.9333333 0.9022222
+##  [8] 0.9200000 0.9422222 0.9333333</code></pre>
+<pre class="r"><code>CVerror</code></pre>
+<pre><code>## [1] 0.9253333</code></pre>
+<p>Ici, c’est le SVM qui nous donne le meilleur rÃ©sultat. ### Analyse Voici les rÃ©sultats de prÃ©cision obtenus pour les differentes mÃ©thodes testÃ©es:</p>
+<ul>
+<li>SVM: 0.926</li>
+<li>RandomForest: 0.918</li>
+<li>LDA: 0.917</li>
+<li>RDA: 0.903</li>
+<li>Naive-Bayes: 0.88</li>
+<li>QDA: 0.66</li>
+<li>SVM + PCA: 0.66</li>
+<li>Naive-Bayes + PCA: 0.57</li>
+<li>LDA + PCA: 0.56</li>
+<li>QDA + PCA: 0.63</li>
+</ul>
+<p>On remarque ici que quatre modÃ¨les ont des performances trÃ¨s similaires Ã  savoir SVM, RandomForest, LDA ainsi que RDA.<br />
+On peut remarquer qu’ici aussi en ajoutant une phase de traitement des donnÃ©es avec rÃ©duction des dimensions grÃ¢ce Ã  l’ACP, les performances des classifieurs sont diminuÃ©es. Encore une fois, ceci s’explique probablement par de la perte d’informations lors de la crÃ©ation des composantes.</p>
 </div>
 </div>
 
