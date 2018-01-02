@@ -1,5 +1,6 @@
 ###### Classifieurs sur les expressions du visage ######  
 library(caret)
+set.seed(101)
 
 #### Obtention des données 
 data_expressions <- read.csv("data/expressions_train.txt",sep = " ")
@@ -30,6 +31,14 @@ data_expressions.test<-data_expressions[-train,]
 data_expressions.train<-data_expressions[train,]
 
 
+#### Preprocessing ####
+
+# delete zero columns 
+X_preprocessed <- X_expressions[, !apply(X_expressions == 0, 2, all)]
+data_preprocessed <- data_expressions[, !apply(data_expressions == 0, 2, all)]
+
+#pca
+
 ############################### Models ############################### 
 
 
@@ -41,17 +50,17 @@ folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspon
 table(folds_i) # Pas le même nombre d'éléments 
 CV<-rep(0,10)
 for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  data_to_use <- data_expressions
+  ncol <- ncol(data_to_use)
   test_i <- which(folds_i == k)
-  # les datasets entre le fit et le predict doivent être les mêmes car c'est le même dataset que l'on divise en k-fold 
-  # on peut utiliser le data set complet ou seulement le train et avoir une idée finale de la performance sur le test
-  train_xy <- data_expressions[-test_i, ]
-  test_xy <- data_expressions[test_i, ]
+  train_xy <- data_to_use[-test_i, ]
+  test_xy <- data_to_use[test_i, ]
   print(k)
-  model_svmLinear <- caret::train(train_xy[,1:4200],train_xy$y,method='svmLinear',trControl= trainControl(
+  model_svmLinear <- caret::train(train_xy[,1:ncol-1],train_xy$y,method='svmLinear',trControl=trainControl(
     method = "cv",
     number =10,
     verboseIter = TRUE))
-  predictions_svmLinear<-predict.train(object=model_svmLinear,test_xy[,1:4200])
+  predictions_svmLinear<-predict.train(object=model_svmLinear,test_xy[,1:ncol-1])
   cf_svmLinear<-caret::confusionMatrix(data= predictions_svmLinear,reference=test_xy$y) 
   CV[k]<- cf_svmLinear$overall["Accuracy"]
 }
@@ -237,7 +246,7 @@ model %>% compile(
 
 history <- model %>% fit(
   X_train2, y_train_cat2, 
-  epochs = 100, batch_size = 1, 
+  epochs = 10, batch_size = 1, 
   validation_split = 0.2
 )
 
