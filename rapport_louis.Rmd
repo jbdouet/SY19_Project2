@@ -34,7 +34,7 @@ Pour trouver le meilleur classifieur pour ces données, nous allons appliquer pl
 
 ### Application
 
-Dans un premier temps, nous allons appliquer simplement plusieurs méthodes conjointement avec la validation croisée pour obtenir des résultats comparrables et significatifs. Nous commençons donc par diviser nos données en deux parties, un ensemble train comportant les deux tiers des données et un ensemble de test comportant le reste.
+Dans un premier temps, nous allons appliquer simplement plusieurs méthodes conjointement avec la validation croisée pour obtenir des résultats comparables et significatifs. Nous commençons donc par diviser nos données en deux parties, un ensemble train comportant les deux tiers des données et un ensemble de test comportant le reste.
 
 ```{r echo=FALSE}
 character <- read.csv("data/characters_train.txt", sep =" ")
@@ -45,7 +45,7 @@ train<-sample(1:n,ntrain)
 character.test<-character[-train,]
 character.train<-character[train,]
 ```
-Une fois la séparation faite, nous mettons en place une validation croisée. Nous divisons alors nos données en dix parties de même taille. Ainsi nous pouvons entrainer notre modèle sur une partie de nos données et ensuite prédire les données de test. On fait alors une moyenne des résultats que nous avons obtenu pour obtenir une erreur stable et significative qu'on utilisera pour comparer nos differentes méthodes et ensuite choisir celle qui nous donne la plus petite erreur. 
+Une fois la séparation faite, nous pouvons alors commencer à tester différents modèles pour avoir une première idée des performances de chacun. Pour cela, on entraine notre modèle sur la partie 'train' et nous prédisons nos classes sur la partie 'test'. Cependant, pour comparer les différentes méthodes il est plus judicieux d'avoir recours à la validation croisée. Nous mettons alors en place ce système qui nous permettra d'avoir des résultats plus significatifs pour comparer nos classifieurs. Nous divisons alors nos données en dix parties de même taille, à chaque itération de notre boucle nous entraînons notre modèle sur la partie des données de 'train' et ensuite nous pouvons prédire les données de test. A chaque itération un nouvel ensemble de 'test' et donc de 'train' sont utilisés. On fait alors une moyenne des résultats que nous avons obtenu pour obtenir une erreur stable et significative qu'on utilisera pour comparer nos differentes méthodes et ensuite choisir celle qui nous donne la plus petite erreur. 
 
 Après avoir testé nos differents modèles, nous avons également mis en place une méthode de réduction de la dimension (ACP). Les données étant déjà centrées autour de 0 et avec des valeurs assez proches, nous n'avons ni besoin de normaliser ces données ni de les redimensionner avant d'appliquer l'ACP.
 
@@ -106,3 +106,41 @@ Nous allons aborder ce problème de la même manière que le précédent. Nous a
 
 ### Application
 
+De la même manière que pour le jeu de données précédent, nous allons créer notre boucle de validation croisée de dix itérations et à l'intérieur de celles ci nous allons entraîner et tester nos modèles.  
+De même, nous avons également mis en place une méthode de réduction de la dimension (ACP). Les données étant déjà centrées autour de 0 et avec des valeurs assez proches, nous n'avons ni besoin de normaliser ces données ni de les redimensionner avant d'appliquer l'ACP.
+
+```{r echo=TRUE}
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n))
+CV<-rep(0,10)
+for (k in 1:n_folds) {
+  test_i <- which(folds_i == k)
+  train_xy <- parole[-test_i, ]
+  test_xy <- parole[test_i, ]
+  svm_train <- svm(y ~ ., data = train_xy)
+  pred_svm<-predict(svm_train, newdata = test_xy, type = "response")
+  prop.table(table(test_xy$y,pred_svm))
+  cm= as.matrix(table(test_xy$y,pred_svm))
+  CV[k]<- sum(diag(cm)) / sum(cm)
+}
+CVerror= sum(CV)/length(CV)
+CV
+CVerror
+```
+Ici, c'est le SVM qui nous donne le meilleur résultat.
+### Analyse
+Voici les résultats de précision obtenus pour les differentes méthodes testées:
+
+  * SVM: 0.924
+  * RandomForest: 0.918
+  * LDA: 0.917
+  * RDA: 0.903
+  * Naive-Bayes: 0.88
+  * QDA: 0.66
+  * SVM + PCA: 0.66
+  * Naive-Bayes + PCA: 0.57
+  * LDA + PCA: 0.56
+  * QDA + PCA: 0.63
+  
+On remarque ici que quatre modèles ont des performances très similaires à savoir SVM, RandomForest, LDA ainsi que RDA.  
+On peut remarquer qu'ici aussi en ajoutant une phase de traitement des données avec réduction des dimensions grâce à l'ACP

@@ -10,6 +10,7 @@ library("e1071")
 library(randomForest)
 library(kernlab)
 library(stats)
+library(MASS)
 
 
 character_data <- read.csv("data/characters_train.txt", sep =" ")
@@ -129,7 +130,7 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   train_xy <- character[-test_i, ]
   test_xy <- character[test_i, ]
   print(k)
-  model_lda <- train(train_xy[,-1],train_xy$Y,method='qda'),trControl= trainControl(
+  model_lda <- train(train_xy[,-1],train_xy$Y,method='qda',trControl= trainControl(
     method = "cv",
     number =10,
     verboseIter = TRUE))
@@ -235,7 +236,7 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
 }
 CVerror= sum(CV)/length(CV)
 CV
-CVerror#0.92
+CVerror#0.924
 
 
 #Naive Bayes + double CV
@@ -286,6 +287,110 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
 CVerror= sum(CV)/length(CV)
 CV
 CVerror#0.921
+
+#QDA
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
+table(folds_i) # Pas le même nombre d'éléments 
+CV<-rep(0,10)
+for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  test_i <- which(folds_i == k)
+  # les datasets entre le fit et le predict doivent être les mêmes car c'est le même dataset que l'on divise en k-fold 
+  # on peut utiliser le data set complet ou seulement le train et avoir une idée finale de la performance sur le test
+  train_xy <- parole[-test_i, ]
+  test_xy <- parole[test_i, ]
+  print(k)
+  model_lda <- train(train_xy[,-257],train_xy$y,method='qda',trControl= trainControl(
+    method = "cv",
+    number =10,
+    verboseIter = TRUE))
+predictions_lda<-predict.train(object=model_lda,test_xy[,-257])
+cf<-confusionMatrix(predictions_lda,test_xy$y) 
+CV[k]<- cf$overall["Accuracy"]
+}
+CVerror= sum(CV)/length(CV)
+CV
+CVerror#0.66
+
+#LDA
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
+table(folds_i) # Pas le même nombre d'éléments 
+CV<-rep(0,10)
+for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  test_i <- which(folds_i == k)
+  # les datasets entre le fit et le predict doivent être les mêmes car c'est le même dataset que l'on divise en k-fold 
+  # on peut utiliser le data set complet ou seulement le train et avoir une idée finale de la performance sur le test
+  train_xy <- parole[-test_i, ]
+  test_xy <- parole[test_i, ]
+  print(k)
+  model_lda <- train(train_xy[,-257],train_xy$y,method='lda',trControl= trainControl(
+    method = "cv",
+    number =10,
+    verboseIter = TRUE))
+  predictions_lda<-predict.train(object=model_lda,test_xy[,-257])
+  cf<-confusionMatrix(predictions_lda,test_xy$y) 
+  CV[k]<- cf$overall["Accuracy"]
+}
+CVerror= sum(CV)/length(CV)
+CV
+CVerror#0.917
+
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre Ã  la taille du dataset que l'on utilisera dans la boucle de cross validation 
+table(folds_i) # Pas le mÃªme nombre d'Ã©lÃ©ments 
+CV<-rep(0,10)
+for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  test_i <- which(folds_i == k)
+  # les datasets entre le fit et le predict doivent Ãªtre les mÃªmes car c'est le mÃªme dataset que l'on divise en k-fold 
+  # on peut utiliser le data set complet ou seulement le train et avoir une idÃ©e finale de la performance sur le test
+  train_xy <- parole[-test_i, ]
+  test_xy <- parole[test_i, ]
+  print(k)
+  pc <- prcomp(train_xy[,-257], center = TRUE)
+  mydata <- data.frame(Species = train_xy[, 257], pc$x)
+  t<-lda(Species~PC1:PC2, data = mydata)
+  test.p <- predict(pc, newdata = test_xy[, -257])
+  pred_svm <- predict(t, newdata = data.frame(test.p), type = "response")
+  
+  
+  prop.table(table(test_xy$y,pred_svm$class))
+  cm= as.matrix(table(test_xy$y,pred_svm$class))
+  CV[k]<- sum(diag(cm)) / sum(cm)
+}
+CVerror= sum(CV)/length(CV)
+CV
+CVerror
+#LDA PCA 0.56
+
+
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre Ã  la taille du dataset que l'on utilisera dans la boucle de cross validation 
+table(folds_i) # Pas le mÃªme nombre d'Ã©lÃ©ments 
+CV<-rep(0,10)
+for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  test_i <- which(folds_i == k)
+  # les datasets entre le fit et le predict doivent Ãªtre les mÃªmes car c'est le mÃªme dataset que l'on divise en k-fold 
+  # on peut utiliser le data set complet ou seulement le train et avoir une idÃ©e finale de la performance sur le test
+  train_xy <- parole[-test_i, ]
+  test_xy <- parole[test_i, ]
+  print(k)
+  pc <- prcomp(train_xy[,-257], center = TRUE)
+  mydata <- data.frame(Species = train_xy[, 257], pc$x)
+  t<-qda(Species~PC1:PC2, data = mydata)
+  test.p <- predict(pc, newdata = test_xy[, -257])
+  pred_svm <- predict(t, newdata = data.frame(test.p), type = "response")
+  
+  
+  prop.table(table(test_xy$y,pred_svm$class))
+  cm= as.matrix(table(test_xy$y,pred_svm$class))
+  CV[k]<- sum(diag(cm)) / sum(cm)
+}
+CVerror= sum(CV)/length(CV)
+CV
+CVerror
+#QDA PCA 0.63
+
 
 #PCA
 #Mean normalization en fait pas besoin les données sont deja centrées
