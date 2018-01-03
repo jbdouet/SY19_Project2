@@ -15,18 +15,6 @@ I1 <- apply(I, 1, rev)
 image(t(I1),col=gray(0:255 / 255))
 #image(matrix(unlist(I1),ncol=70, byrow =TRUE ),col=gray(0:255 / 255))
 
-# Selection zone yeux 
-I14<-matrix(as.matrix(X_expressions[14,]),60,70)
-I14_eyes<-matrix(as.matrix(I14[301:1260]),nrow = 60,ncol = 16)
-Ieyes <- apply(I14_eyes, 1, rev)
-image(t(Ieyes),col=gray(0:255 / 255))
-
-# Selection zone bouche 
-I14<-matrix(as.matrix(X_expressions[14,]),60,70)
-I14_mouth<-matrix(as.matrix(I14[2421:3260]),nrow = 60,ncol = 14)
-Imouth <- apply(I14_mouth, 1, rev)
-image(t(Imouth),col=gray(0:255 / 255))
-
 
 dim(X_expressions)
 dim(X_expressions[complete.cases(X_expressions), ])
@@ -49,8 +37,36 @@ data_expressions.train<-data_expressions[train,]
 X_preprocessed <- X_expressions[, !apply(X_expressions == 0, 2, all)]
 data_preprocessed <- data_expressions[, !apply(data_expressions == 0, 2, all)]
 
+#sélections zones expressives du visage 
+# Selection zone yeux 
+I14<-matrix(as.matrix(X_expressions[14,]),60,70)
+I14_eyes<-matrix(as.matrix(I14[301:1260]),nrow = 60,ncol = 16)
+Ieyes <- apply(I14_eyes, 1, rev)
+image(t(Ieyes),col=gray(0:255 / 255))
+
+# Selection zone bouche 
+I14<-matrix(as.matrix(X_expressions[14,]),60,70)
+I14_mouth<-matrix(as.matrix(I14[2460:3359]),nrow = 60,ncol = 15)
+Imouth <- apply(I14_mouth, 1, rev)
+image(t(Imouth),col=gray(0:255 / 255))
+
 #pca
 
+require(graphics)
+prin_comp <- prcomp(X_selproc)
+
+std_dev <- prin_comp$sdev
+pr_var <- std_dev^2
+pr_var[1:10]
+prop_varex <- pr_var/sum(pr_var)
+
+plot(prop_varex, xlab = "Principal Component",
+     ylab = "Proportion of Variance Explained",
+     type = "b")
+
+plot(cumsum(prop_varex), xlab = "Principal Component",
+     ylab = "Cumulative Proportion of Variance Explained",
+     type = "b")
 ############################### Models ############################### 
 
 

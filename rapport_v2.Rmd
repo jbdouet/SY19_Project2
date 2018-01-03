@@ -58,7 +58,7 @@ data_preprocessed <- data_expressions[, !apply(data_expressions == 0, 2, all)]
 dim(data_preprocessed)
 ```
 
-### Sélection de parties du visage 
+### Sélection des parties expressives du visage 
 
 Une autre manière de réduire la dimension du dataset est de sélectionner les parties qui expriment l'expression du visage. Nous sommes parties de l'hypothèse que les parties les plus expressives sont celles autour des yeux et de la bouche. C'est une hypothèse forte que l'on a voulu tester et puisque les visages ne bougent pas (pas de rotation, faibles translations), il suffit de sélectionner une zone de pixels.
 Ci-dessous, un exemple de sélection de la zone des yeux.
@@ -73,6 +73,21 @@ image(t(Ieyes),col=gray(0:255 / 255))
 ### PCA
 
 La dernière technique pour réduire le nombre de dimensions a été le PCA.
+En effet avec ou sans les sélections précédentes, le nombre de features dépassait toujours le millier.
+Dans chaque cas le choix du nombres de composantes principales s'est fait en traçant les courbes de propotions de la variance en fonction du nombres de composantes.
+
+```{r, echo=F}
+require(graphics)
+prin_comp <- prcomp(X_selproc)
+std_dev <- prin_comp$sdev
+pr_var <- std_dev^2
+pr_var[1:10]
+prop_varex <- pr_var/sum(pr_var)
+plot(prop_varex, xlab = "Principal Component",
+             ylab = "Proportion of Variance Explained",
+             type = "b")
+
+```
 
 ## Analyse
 Voici les résultats (la précision obtenue) pour les differentes méthodes testées:
@@ -152,11 +167,11 @@ Voici les résultats de précision obtenus pour les differentes méthodes testé
   * QDA + PCA: 0.68
   
 Comme prévu, les méthodes simples et linéaires sont celles qui nous donnent les classifieurs les moins précis. Naive-Bayes est ici peu performant ce qui pourrait s'expliquer par une trop grande corrélation entre plusieurs prÃ©dicteurs.  
-Nous avons alors ensuite ajouté une partie de traitement des données avec l'ACP. En effet, notamment pour amÃ©liorer les rÃ©sultats de modÃ¨les comme Naive-Bayes nous avons appliquÃ© l'ACP pour rÃ©duire les dimensions de notre jeu de donnÃ©es. Cependant, quel que soit le modÃ¨le auquel on a appliquÃ© l'ACP, le rÃ©sultat de notre classifieur devenait moins bon. Ceci s'explique par le fonctionnement de ce traitement. En effet, l'ACP prend en compte seulement les coordonnÃ©es des points de nos donnÃ©es. L'ACP peut donc supprimer des informations qui sont pourtant importantes pour classifier nos donnÃ©es. En fonction de notre jeu de donnÃ©es ce processus de construction peut mener Ã  de mauvaises composantes n'expliquant pas bien nos classes et donc rÃ©sultant en des classifieurs moins performants. C'est pour cette raison que cette phase de traitement n'a pas Ã©tÃ© maintenue pour notre classifieur final.
+Nous avons alors ensuite ajouté une partie de traitement des données avec l'ACP. En effet, notamment pour amÃ©liorer les résultats de modèles comme Naive-Bayes nous avons appliquÃ© l'ACP pour réduire les dimensions de notre jeu de donnÃ©es. Cependant, quel que soit le modèle auquel on a appliquÃ© l'ACP, le résultat de notre classifieur devenait moins bon. Ceci s'explique par le fonctionnement de ce traitement. En effet, l'ACP prend en compte seulement les coordonnÃ©es des points de nos données. L'ACP peut donc supprimer des informations qui sont pourtant importantes pour classifier nos donnÃ©es. En fonction de notre jeu de donnÃ©es ce processus de construction peut mener Ã  de mauvaises composantes n'expliquant pas bien nos classes et donc rÃ©sultant en des classifieurs moins performants. C'est pour cette raison que cette phase de traitement n'a pas Ã©tÃ© maintenue pour notre classifieur final.
 
 ### Conclusion
 
-AprÃ¨s le test de nos diffÃ©rents modÃ¨les et mÃªme de l'ajout d'une phase de traitement des donnÃ©es, les rÃ©sultats obtenus par validation croisÃ©e nous permettent de choisir le meilleur classifieur pour ce jeu de donnÃ©es. Ainsi c'est le randomForest qui nous donne le meilleur rÃ©sultat avec une erreur de seulement 6.6% ce qui est assez satisfaisant. 
+Après le test de nos différents modèles et mÃªme de l'ajout d'une phase de traitement des donnÃ©es, les rÃ©sultats obtenus par validation croisÃ©e nous permettent de choisir le meilleur classifieur pour ce jeu de donnÃ©es. Ainsi c'est le randomForest qui nous donne le meilleur rÃ©sultat avec une erreur de seulement 6.6% ce qui est assez satisfaisant. 
 
 
 ## Paroles
