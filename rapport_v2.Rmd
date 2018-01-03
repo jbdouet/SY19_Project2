@@ -42,14 +42,14 @@ table(y_expressions)
 ```
 ## Preprocessing 
 
-### Elimmination des pixels noirs
+### Elimination des pixels noirs
 Tout d'abord, il a fallu essayer de voir s'il était possible de réduire le nombre de dimensions du dataset.
 Comme on le voit sur l'image ci dessous, il y a des zones noires sur les angles inférieurs. 
-```{r, echo=FALSE,fig.height=10, fig.width=10}
+```{r, echo=FALSE,fig.height=6, fig.width=6}
 image(t(I1),col=gray(0:255 / 255))
 ```
 
-Ces parties noires sont présentes sur toutes les images au même endroit et résultent donc en colonne égale à zéro dans le dataset. Puisqu'on ne tient pas compte de la géométrie de l'image, ces zones noires ne permettent pas de différencier une image par rapport à une autre (puisqu'elles sont similaires dans toutes les images), on peut donc éliminer leurs colonnes respectives dans le dataset.
+Ces parties noires sont présentes sur toutes les images au même endroit et résultent donc en colonnes égales à zéro dans le dataset. Puisqu'on ne tient pas compte de la géométrie de l'image, ces zones noires ne permettent pas de différencier une image par rapport à une autre (puisqu'elles sont similaires dans toutes les images), on peut donc éliminer leurs colonnes respectives dans le dataset.
 
 ```{r}
 data_preprocessed <- data_expressions[, !apply(data_expressions == 0, 2, all)]
@@ -58,10 +58,10 @@ dim(data_preprocessed)
 
 ### Sélection des parties expressives du visage 
 
-Une autre manière de réduire la dimension du dataset est de sélectionner les parties qui expriment l'expression du visage. Nous sommes parties de l'hypothèse que les parties les plus expressives sont celles autour des yeux et de la bouche. C'est une hypothèse forte que l'on a voulu tester et puisque les visages ne bougent pas (pas de rotation, faibles translations), il suffit de sélectionner une zone de pixels.
-Ci-dessous, un exemple du pca après la sélection des parties expressives du visage.
+Une autre manière de réduire la dimension du dataset est de sélectionner les parties qui expriment l'expression du visage. Nous sommes partis de l'hypothèse que les parties les plus expressives sont celles autour des yeux et de la bouche. C'est une hypothèse forte que l'on a voulu tester et puisque les visages ne bougent pas (pas de rotation, faibles translations), il suffit de sélectionner une zone de pixels.
+Ci-dessous, un exemple de cette sélection sur la même image qu'affichée précédemment.
 
-```{r, echo=F,fig.height=6, fig.width=10}
+```{r, echo=F,fig.height=3, fig.width=10}
 par(mfrow = c(1, 2))
 image(t(Ieyes),col=gray(0:255 / 255))
 image(t(Imouth),col=gray(0:255 / 255))
@@ -71,8 +71,8 @@ image(t(Imouth),col=gray(0:255 / 255))
 
 La dernière technique pour réduire le nombre de dimensions a été le PCA.
 En effet avec ou sans les sélections précédentes, le nombre de features dépassait toujours le millier.
-Dans chaque cas le choix du nombres de composantes principales s'est fait en traçant les courbes de propotions de la variance en fonction du nombres de composantes.
-Ci-dessous le PCA exécuté sur les parties de 
+Dans chaque cas le choix du nombres de composantes principales s'est fait en traçant les courbes de proportions de la variance en fonction du nombres de composantes.
+Ci-dessous le PCA exécuté après la sélection des parties expressives du visage.
 ```{r, echo=F}
 require(graphics)
 
@@ -87,6 +87,7 @@ plot(cumsum(prop_varex), xlab = "Principal Component",
 
 ```
 
+Pour les courbes affichées nous avons choisi 25 composantes principales ce qui visuellement et après plusieurs tests nous est apparu comme le meilleur compromis.
 
 ## Classification 
 
@@ -94,18 +95,34 @@ Afin d'obtenir le meilleur résultat de classification nous avons testé plusieu
 Différentes combinaison parmi ces étapes ont donc été testées en fonction des propriétés des classifieurs.
 
 ## Analyse
-Voici les résultats (la précision obtenue) pour les differentes méthodes testées:
+Voici les résultats (la précision obtenue) pour les differentes méthodes testées.
+Au niveau du preprocessing, pour toutes les méthodes, les pixels noirs ont été retirés. 
+Les autres étapes ont été testées en même temps que les classifieurs comme cela:
 
-  * SVM: 0.926
-  * RandomForest: 0.918
-  * LDA: 0.917
-  * RDA: 0.903
-  * Naive-Bayes: 0.88
-  * QDA: 0.66
-  * SVM + PCA: 0.66
-  * Naive-Bayes + PCA: 0.57
-  * LDA + PCA: 0.56
-  * QDA + PCA: 0.63
+  * SVM linear: 0.73
+  * SVM polynomial: 0.70
+  * RandomForest: 0.73
+  * Naive-Bayes: 0.70
+  * RDA: 0.71
+  * XGBOOST: 0.68
+  
+  * SVM linear+ PCA: 0.69
+  * Naive Bayes + PCA: 0.69
+  * RDA + PCA :0.82
+  * RandomForest + PCA : 0.65
+  * XGBOOST + PCA: 0.71
+  
+  
+  * SVM linear + Sélection des zones expressives+ PCA: 0.69
+  * Naive Bayes + Sélection des zones expressives+ PCA: 0.72
+  * RDA + Sélection des zones expressives + PCA :0.78
+  * RandomForest + Sélection des zones expressives + PCA : 0.68
+  * XGBOOST+ Sélection des zones expressives + PCA: 0.71
+
+## Observations 
+
+Globalement, la sélections des zones expressives du visage couplée au PCA améliore les performances par rapport au PCA normal. A l'exception du RDA (regularized discriminant analysis) qui a de meilleures performances lorsque seul le PCA est appliqué.
+On notera que les performances algorithmes de SVM linéaire et de random forest 
 
 ## Autres méthodes
 
@@ -113,15 +130,22 @@ Afin d'exploiter la géométrie des images, il existe des algorithmes basés sur
 Ce sont ces algorithmes qui, pendant les dernières années, ont permis d'améliorer nettement les résultats de classification d'images par rapport aux algorithmes de machine learning classique.
 A l'aide de la librairie Keras, nous avons essayé de les exploiter de deux manières différentes.
 
-1) Construire un réseau CNN
+### Construire un réseau CNN
 
+Avec cette méthode on définit la structure du réseau de neurones et on l'entraîne depuis le début avec les images dont on dispose.
 
+![](CNN_training.png)
 
-2) Transfer learning
+On se rend compte ici que le training ne se fait quasiment pas, et ce malgré une architecture relativement peu profonde.
+Cela est majoritairement dû au faible nombre d'individus dans le dataset qui ne permet pas d'entrainer de tel réseau. En effet, c'est le défaut de ce genre de méthode, elles néccéssitent de grands dataset, de l'ordre de la dizaine de millier au million en fonction du nombre de paramètres en entrée et de la complexité du réseau.
 
-Le transfer learning exploite un réseau de neurones profond déjà pré-entrainé afin de 
+### Transfer learning
 
-La première chose 
+Le transfer learning exploite un réseau de neurones profond déjà pré-entrainé afin de palier au petit nombre d'individus dans un dataset. 
+La partie déjà entrainée joue donc le rôle de "feature extractor" sur lequel on réentraine un réseaux de neurones peu profond.
+
+Malheureusement, avec 108 individus, même un réseau de neurones peu profond ne converge pas. 
+
 
 ## Character
 ### Analyse
