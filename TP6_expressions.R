@@ -15,6 +15,18 @@ I1 <- apply(I, 1, rev)
 image(t(I1),col=gray(0:255 / 255))
 #image(matrix(unlist(I1),ncol=70, byrow =TRUE ),col=gray(0:255 / 255))
 
+# Selection zone yeux 
+I14<-matrix(as.matrix(X_expressions[14,]),60,70)
+I14_eyes<-matrix(as.matrix(I14[301:1260]),nrow = 60,ncol = 16)
+Ieyes <- apply(I14_eyes, 1, rev)
+image(t(Ieyes),col=gray(0:255 / 255))
+
+# Selection zone bouche 
+I14<-matrix(as.matrix(X_expressions[14,]),60,70)
+I14_mouth<-matrix(as.matrix(I14[2421:3260]),nrow = 60,ncol = 14)
+Imouth <- apply(I14_mouth, 1, rev)
+image(t(Imouth),col=gray(0:255 / 255))
+
 
 dim(X_expressions)
 dim(X_expressions[complete.cases(X_expressions), ])
