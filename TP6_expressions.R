@@ -50,6 +50,16 @@ I14_mouth<-matrix(as.matrix(I14[2460:3359]),nrow = 60,ncol = 15)
 Imouth <- apply(I14_mouth, 1, rev)
 image(t(Imouth),col=gray(0:255 / 255))
 
+par(mfrow = c(1, 2))
+image(t(Ieyes),col=gray(0:255 / 255))
+image(t(Imouth),col=gray(0:255 / 255))
+
+Xselected <- cbind(X_expressions[301:1260],X_expressions[2601:3260])
+
+#parmi les données sélectionnées, on enlève aussi les pixels noirs
+X_selproc<- Xselected[, !apply(Xselected == 0, 2, all)]
+data_selproc=data.frame(X_selproc,y=y_expressions)
+
 #pca
 
 require(graphics)
@@ -252,13 +262,13 @@ num_classes=6
 model <- keras_model_sequential() 
 model %>% 
   #layer_dense(units = 10, activation = 'relu', input_shape = c(4200)) %>% 
-  layer_conv_2d(filters = 32, kernel_size = c(3,3), activation = 'relu',
+  layer_conv_2d(filters = 12, kernel_size = c(3,3), activation = 'relu',
                 input_shape = input_shape) %>% 
-  layer_conv_2d(filters = 64, kernel_size = c(3,3), activation = 'relu') %>% 
+  layer_conv_2d(filters = 24, kernel_size = c(3,3), activation = 'relu') %>% 
   layer_max_pooling_2d(pool_size = c(2, 2)) %>% 
   layer_dropout(rate = 0.25) %>% 
   layer_flatten() %>% 
-  layer_dense(units = 128, activation = 'relu') %>% 
+  layer_dense(units = 6, activation = 'relu') %>% 
   layer_dropout(rate = 0.5) %>% 
   layer_dense(units = num_classes, activation = 'softmax')
 

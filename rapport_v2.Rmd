@@ -45,9 +45,7 @@ table(y_expressions)
 ### Elimmination des pixels noirs
 Tout d'abord, il a fallu essayer de voir s'il était possible de réduire le nombre de dimensions du dataset.
 Comme on le voit sur l'image ci dessous, il y a des zones noires sur les angles inférieurs. 
-```{r, echo=FALSE}
-I<-matrix(as.matrix(X_expressions[14,]),60,70)
-I1 <- apply(I, 1, rev)
+```{r, echo=FALSE,fig.height=10, fig.width=10}
 image(t(I1),col=gray(0:255 / 255))
 ```
 
@@ -61,13 +59,12 @@ dim(data_preprocessed)
 ### Sélection des parties expressives du visage 
 
 Une autre manière de réduire la dimension du dataset est de sélectionner les parties qui expriment l'expression du visage. Nous sommes parties de l'hypothèse que les parties les plus expressives sont celles autour des yeux et de la bouche. C'est une hypothèse forte que l'on a voulu tester et puisque les visages ne bougent pas (pas de rotation, faibles translations), il suffit de sélectionner une zone de pixels.
-Ci-dessous, un exemple de sélection de la zone des yeux.
+Ci-dessous, un exemple du pca après la sélection des parties expressives du visage.
 
-```{r, echo=F}
-I14<-matrix(as.matrix(X_expressions[14,]),60,70)
-I14_eyes<-matrix(as.matrix(I14[301:1260]),nrow = 60,ncol = 16)
-Ieyes <- apply(I14_eyes, 1, rev)
+```{r, echo=F,fig.height=6, fig.width=10}
+par(mfrow = c(1, 2))
 image(t(Ieyes),col=gray(0:255 / 255))
+image(t(Imouth),col=gray(0:255 / 255))
 ```
 
 ### PCA
@@ -75,19 +72,26 @@ image(t(Ieyes),col=gray(0:255 / 255))
 La dernière technique pour réduire le nombre de dimensions a été le PCA.
 En effet avec ou sans les sélections précédentes, le nombre de features dépassait toujours le millier.
 Dans chaque cas le choix du nombres de composantes principales s'est fait en traçant les courbes de propotions de la variance en fonction du nombres de composantes.
-
+Ci-dessous le PCA exécuté sur les parties de 
 ```{r, echo=F}
 require(graphics)
-prin_comp <- prcomp(X_selproc)
-std_dev <- prin_comp$sdev
-pr_var <- std_dev^2
-pr_var[1:10]
-prop_varex <- pr_var/sum(pr_var)
+
+par(mfrow = c(1, 2))
 plot(prop_varex, xlab = "Principal Component",
-             ylab = "Proportion of Variance Explained",
-             type = "b")
+     ylab = "Proportion of Variance Explained",
+     type = "b")
+
+plot(cumsum(prop_varex), xlab = "Principal Component",
+     ylab = "Cumulative Proportion of Variance Explained",
+     type = "b")
 
 ```
+
+
+## Classification 
+
+Afin d'obtenir le meilleur résultat de classification nous avons testé plusieurs classifieurs sur différents types de vecteurs en entrée. En effet, tous les algorithmes ne réagissent pas de la même manière aux étapes de preprocessing présentées. 
+Différentes combinaison parmi ces étapes ont donc été testées en fonction des propriétés des classifieurs.
 
 ## Analyse
 Voici les résultats (la précision obtenue) pour les differentes méthodes testées:
@@ -102,7 +106,26 @@ Voici les résultats (la précision obtenue) pour les differentes méthodes test
   * Naive-Bayes + PCA: 0.57
   * LDA + PCA: 0.56
   * QDA + PCA: 0.63
-  
+
+## Autres méthodes
+
+Afin d'exploiter la géométrie des images, il existe des algorithmes basés sur des réseaux de neurones à convolution appelés CNN. 
+Ce sont ces algorithmes qui, pendant les dernières années, ont permis d'améliorer nettement les résultats de classification d'images par rapport aux algorithmes de machine learning classique.
+A l'aide de la librairie Keras, nous avons essayé de les exploiter de deux manières différentes.
+
+1) Construire un réseau CNN
+
+```{r}
+plot(history)
+
+```
+
+2) Transfer learning
+
+Le transfer learning exploite un réseau de neurones profond déjà pré-entrainé afin de 
+
+La première chose 
+
 ## Character
 ### Analyse
 
@@ -129,7 +152,7 @@ train<-sample(1:n,ntrain)
 character.test<-character[-train,]
 character.train<-character[train,]
 ```
-Une fois la séparation faite, nous pouvons alors commencer à tester diffÃ©rents modÃ¨les pour avoir une première idÃ©e des performances de chacun. Pour cela, on entraine notre modÃ¨le sur la partie 'train' et nous prÃ©disons nos classes sur la partie 'test'. Cependant, pour comparer les diffÃ©rentes mÃ©thodes il est plus judicieux d'avoir recours Ã  la validation croisÃ©e. Nous mettons alors en place ce systÃ¨me qui nous permettra d'avoir des rÃ©sultats plus significatifs pour comparer nos classifieurs. Nous divisons alors nos donnÃ©es en dix parties de mÃªme taille, Ã  chaque itÃ©ration de notre boucle nous entraÃ®nons notre modÃ¨le sur la partie des donnÃ©es de 'train' et ensuite nous pouvons prÃ©dire les donnÃ©es de test. A chaque itÃ©ration un nouvel ensemble de 'test' et donc de 'train' sont utilisÃ©s. On fait alors une moyenne des rÃ©sultats que nous avons obtenu pour obtenir une erreur stable et significative qu'on utilisera pour comparer nos differentes mÃ©thodes et ensuite choisir celle qui nous donne la plus petite erreur. 
+Une fois la séparation faite, nous pouvons alors commencer à tester diffÃ©rents modÃ¨les pour avoir une première idÃ©e des performances de chacun. Pour cela, on entraine notre modèle sur la partie 'train' et nous prÃ©disons nos classes sur la partie 'test'. Cependant, pour comparer les différentes mÃ©thodes il est plus judicieux d'avoir recours Ã  la validation croisée. Nous mettons alors en place ce système qui nous permettra d'avoir des rÃ©sultats plus significatifs pour comparer nos classifieurs. Nous divisons alors nos donnÃ©es en dix parties de mÃªme taille, Ã  chaque itération de notre boucle nous entraÃ®nons notre modèle sur la partie des donnÃ©es de 'train' et ensuite nous pouvons prédire les donnÃ©es de test. A chaque itÃ©ration un nouvel ensemble de 'test' et donc de 'train' sont utilisÃ©s. On fait alors une moyenne des rÃ©sultats que nous avons obtenu pour obtenir une erreur stable et significative qu'on utilisera pour comparer nos differentes mÃ©thodes et ensuite choisir celle qui nous donne la plus petite erreur. 
 
 Après avoir testé nos differents modèles, nous avons également mis en place une mÃ©thode de réduction de la dimension (ACP). Les données étant déjà  centrées autour de 0 et avec des valeurs assez proches, nous n'avons ni besoin de normaliser ces données ni de les redimensionner avant d'appliquer l'ACP.
 
