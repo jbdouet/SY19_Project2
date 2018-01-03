@@ -6,8 +6,8 @@ subtitle: "Jean-Baptiste Douet | Louis Martignoni"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-load("/Users/Jean-Baptiste/Documents/GI05/SY19/TPs/TP6/SY19_Project2/envlouis.RData")
-load("/Users/Jean-Baptiste/Documents/GI05/SY19/TPs/TP6/SY19_Project2/envJB.RData")
+load("~/SY19/SY19_Project2/envlouis.RData")
+load("~/SY19/SY19_Project2/envJB.RData")
 library(caret)
 library(car)
 library("e1071")
@@ -115,10 +115,7 @@ A l'aide de la librairie Keras, nous avons essayé de les exploiter de deux mani
 
 1) Construire un réseau CNN
 
-```{r}
-plot(history)
 
-```
 
 2) Transfer learning
 
@@ -129,7 +126,7 @@ La première chose
 ## Character
 ### Analyse
 
-Nous commençons dans un premier temps par analyser notre jeu de données. Grâce à la commande 'summary', nous pouvons voir que chaque élément est décrit par 16 variables quantitatives et que nos individus vont logiquement être divisés en 26 classes représentant l'alphabet. On note également que les variables semblent issues d'une loi centrée autour de 0. Enfin les individus sont repartis assez Ã©quitablement dans les differentes classes. 
+Nous commençons dans un premier temps par analyser notre jeu de données. Grâce à la commande 'summary', nous pouvons voir que chaque élément est décrit par 16 variables quantitatives et que nos individus vont logiquement être divisés en 26 classes représentant l'alphabet. On note également que les variables semblent issues d'une loi centrée autour de 0. Enfin les individus sont repartis assez équitablement dans les differentes classes. De plus, le nombre d'individus est largement supérieur au nombre de prédicteurs, nos modèles ne devraient donc pas faire du 'overfitting'.
 
 ```{r character}
 table(character_data$Y)
@@ -141,10 +138,12 @@ Pour trouver le meilleur classifieur pour ces données, nous allons appliquer pl
 
 ### Application
 
-Dans un premier temps, nous allons appliquer simplement plusieurs mÃ©thodes conjointement avec la validation croisÃ©e pour obtenir des rÃ©sultats comparables et significatifs. Nous commenÃ§ons donc par diviser nos donnÃ©es en deux parties, un ensemble train comportant les deux tiers des donnÃ©es et un ensemble de test comportant le reste.
-
+Dans un premier temps, nous allons appliquer simplement plusieurs méthodes conjointement avec la validation croisée pour obtenir des résultats comparables et significatifs. Nous commençons donc par diviser nos données en deux parties, un ensemble train comportant les deux tiers des données et un ensemble de test comportant le reste.
 ```{r echo=FALSE}
 character <- read.csv("data/characters_train.txt", sep =" ")
+```
+
+```{r echo=TRUE}
 n=nrow(character)
 ntrain=ceiling(n*2/3)
 ntst=n-ntrain
@@ -152,9 +151,9 @@ train<-sample(1:n,ntrain)
 character.test<-character[-train,]
 character.train<-character[train,]
 ```
-Une fois la séparation faite, nous pouvons alors commencer à tester diffÃ©rents modÃ¨les pour avoir une première idÃ©e des performances de chacun. Pour cela, on entraine notre modèle sur la partie 'train' et nous prÃ©disons nos classes sur la partie 'test'. Cependant, pour comparer les différentes mÃ©thodes il est plus judicieux d'avoir recours Ã  la validation croisée. Nous mettons alors en place ce système qui nous permettra d'avoir des rÃ©sultats plus significatifs pour comparer nos classifieurs. Nous divisons alors nos donnÃ©es en dix parties de mÃªme taille, Ã  chaque itération de notre boucle nous entraÃ®nons notre modèle sur la partie des donnÃ©es de 'train' et ensuite nous pouvons prédire les donnÃ©es de test. A chaque itÃ©ration un nouvel ensemble de 'test' et donc de 'train' sont utilisÃ©s. On fait alors une moyenne des rÃ©sultats que nous avons obtenu pour obtenir une erreur stable et significative qu'on utilisera pour comparer nos differentes mÃ©thodes et ensuite choisir celle qui nous donne la plus petite erreur. 
+Une fois la séparation faite, nous pouvons alors commencer à tester différents modèles pour avoir une première idée des performances de chacun. Pour cela, on entraine notre modèle sur la partie 'train' et nous prédisons nos classes sur la partie 'test'. Cependant, pour comparer les différentes méthodes il est plus judicieux d'avoir recours à la validation croisée. Nous mettons alors en place ce système qui nous permettra d'avoir des résultats plus significatifs pour comparer nos classifieurs. Nous divisons alors nos données en dix parties de même taille, à chaque itération de notre boucle nous entraînons notre modèle sur la partie des données de 'train' et ensuite nous pouvons prédire les données de test. A chaque itération un nouvel ensemble de 'test' et donc de 'train' sont utilisés. On fait alors une moyenne des résultats que nous avons obtenu pour obtenir une erreur stable et significative qu'on utilisera pour comparer nos differentes méthodes et ensuite choisir celle qui nous donne la plus petite erreur. 
 
-Après avoir testé nos differents modèles, nous avons également mis en place une mÃ©thode de réduction de la dimension (ACP). Les données étant déjà  centrées autour de 0 et avec des valeurs assez proches, nous n'avons ni besoin de normaliser ces données ni de les redimensionner avant d'appliquer l'ACP.
+Après avoir testé nos differents modèles, nous avons également mis en place une méthode de réduction de la dimension (ACP). Les données étant déjà centrées autour de 0 et avec des valeurs assez proches, nous n'avons ni besoin de normaliser ces données ni de les redimensionner avant d'appliquer l'ACP. Cette étape peut avoir l'avantage de supprimer d'éventuels redondances entre nos informations cependant on peut également perdre des informations. Il sera donc intéressant de comparer nos modèles avec et sans la phase de traitement de l'ACP.
 
 Pour ce jeu de données, c'est le modèle du random forest qui a donné le meilleur résultat. 
 ```{r echo=TRUE}
@@ -173,7 +172,7 @@ for (k in 1:n_folds) {
 }
 CVerror= sum(CV)/length(CV)
 ```
-En effet, pour ce jeu de données les méthodes de résolution linéaire sont moins efficaces. C'est pour cette raison que le LDA a des performances moindres comparé au random forest qui est moins dépendant des variables. De même on peut remarquer que le QDA nous donne de meilleures performances que le LDA. Ceci est probablement expliqué par le fait que les variables n'ont pas les mÃªmes matrices de variance-covariance. Dans ce cas, les méthodes linéaires comme le LDA sont beaucoup moins efficaces pour differencier les differentes classes. Dans ce cas de figure, les méthodes quadratiques comme le QDA ainsi que d'autres méthodes moins dépendantes de cette caractéristique comme le random forest nous donne de meilleurs résultats.
+En effet, pour ce jeu de données les méthodes de résolution linéaire sont moins efficaces. C'est pour cette raison que le LDA a des performances moindres comparé au random forest qui est moins dépendant des variables. De même on peut remarquer que le QDA nous donne de meilleures performances que le LDA. Ceci est probablement expliqué par le fait que les variables n'ont pas les mêmes matrices de variance-covariance. Dans ce cas, les méthodes linéaires comme le LDA sont beaucoup moins efficaces pour differencier les differentes classes. Dans ce cas de figure, les méthodes quadratiques comme le QDA ainsi que d'autres méthodes moins dépendantes de cette caractéristique comme le random forest nous donne de meilleurs résultats.
 
 ### Résultats
 Voici les résultats de précision obtenus pour les differentes méthodes testées:
@@ -189,32 +188,33 @@ Voici les résultats de précision obtenus pour les differentes méthodes testé
   * LDA + PCA: 0.65
   * QDA + PCA: 0.68
   
-Comme prévu, les méthodes simples et linéaires sont celles qui nous donnent les classifieurs les moins précis. Naive-Bayes est ici peu performant ce qui pourrait s'expliquer par une trop grande corrélation entre plusieurs prÃ©dicteurs.  
-Nous avons alors ensuite ajouté une partie de traitement des données avec l'ACP. En effet, notamment pour amÃ©liorer les résultats de modèles comme Naive-Bayes nous avons appliquÃ© l'ACP pour réduire les dimensions de notre jeu de donnÃ©es. Cependant, quel que soit le modèle auquel on a appliquÃ© l'ACP, le résultat de notre classifieur devenait moins bon. Ceci s'explique par le fonctionnement de ce traitement. En effet, l'ACP prend en compte seulement les coordonnÃ©es des points de nos données. L'ACP peut donc supprimer des informations qui sont pourtant importantes pour classifier nos donnÃ©es. En fonction de notre jeu de donnÃ©es ce processus de construction peut mener Ã  de mauvaises composantes n'expliquant pas bien nos classes et donc rÃ©sultant en des classifieurs moins performants. C'est pour cette raison que cette phase de traitement n'a pas Ã©tÃ© maintenue pour notre classifieur final.
+Comme prévu, les méthodes simples et linéaires sont celles qui nous donnent les classifieurs les moins précis. Naive-Bayes est ici peu performant ce qui pourrait s'expliquer par une trop grande corrélation entre plusieurs prédicteurs.  
+Nous avons alors ensuite ajouté une partie de traitement des données avec l'ACP. En effet, notamment pour améliorer les résultats de modèles comme Naive-Bayes nous avons appliqué l'ACP pour réduire les dimensions de notre jeu de données. Cependant, quel que soit le modèle auquel on a appliqué l'ACP, le résultat de notre classifieur devenait moins bon. Ceci s'explique par le fonctionnement de ce traitement. En effet, l'ACP prend en compte seulement les coordonnées des points de nos données. L'ACP peut donc supprimer des informations qui sont pourtant importantes pour classifier nos données. En fonction de ces dernières ce processus de construction peut mener à de mauvaises composantes n'expliquant pas bien nos classes et donc résultant en des classifieurs moins performants. C'est pour cette raison que cette phase de traitement n'a pas été maintenue pour notre classifieur final.  
+Le RandomForest est très performant ici notamment car nous disposons de beaucoup plus d'individus que de prédicteurs. Ceci empêche un des risques avec ce modèle: l'overfitting. 
 
 ### Conclusion
 
-Après le test de nos différents modèles et mÃªme de l'ajout d'une phase de traitement des donnÃ©es, les rÃ©sultats obtenus par validation croisÃ©e nous permettent de choisir le meilleur classifieur pour ce jeu de donnÃ©es. Ainsi c'est le randomForest qui nous donne le meilleur rÃ©sultat avec une erreur de seulement 6.6% ce qui est assez satisfaisant. 
+Après le test de nos différents modèles et même de l'ajout d'une phase de traitement des données, les résultats obtenus par validation croisée nous permettent de choisir le meilleur classifieur pour ce jeu de données. Ainsi c'est le randomForest qui nous donne le meilleur résultat avec une erreur de seulement 6.6% ce qui est assez satisfaisant. Ce résultat nous laisse penser que notre jeu de données est suffisament important pour que nos modèles puissent apprendre de manière efficace les différents éléments. 
 
 
 ## Paroles
 
 ### Analyse
 
-Comme pour le jeu de donnÃ©es prÃ©cÃ©dent, nous commenÃ§ons par analyser notre jeu de donnÃ©es avec la commande 'summary'. Nous avons donc prÃ¨s de 2500 individus caractÃ©risÃ©s par 256 variables. Ces individus sont rÃ©partis dans cinq classes.  
+Comme pour le jeu de données précédent, nous commençons par analyser notre jeu de données avec la commande 'summary'. Nous avons donc près de 2500 individus caractérisés par 256 variables. Ces individus sont répartis dans cinq classes.  
 ```{r }
 table(parole$y)
 ```
-Nous pouvons voir que les diffÃ©rentes classes ne contiennent pas le mÃªme nombre d'individus mais les diffÃ©rences sont relativement faibles (entre 16 et 26%). On note Ã©galement que les variables semblent issues d'une loi centrÃ©e autour de 0.
+Nous pouvons voir que les différentes classes ne contiennent pas le même nombre d'individus mais les différences sont relativement faibles (entre 16 et 26%). On note également que les variables semblent issues d'une loi centrée autour de 0. Enfin, malgré notre nombre important de prédicteurs, nous disposons de suffisament d'individus pour limiter les risques d'overfitting.
 
 ### Approche
 
-Nous allons aborder ce problÃ¨me de la mÃªme maniÃ¨re que le prÃ©cÃ©dent. Nous allons comparer diffÃ©rents modÃ¨les en comparant l'erreur issue de la validation croisÃ©e et pourrons ainsi choisir notre meilleur classifieur pour ce jeu de donnÃ©es.
+Nous allons aborder ce problème de la même manière que le précédent. Nous allons comparer différents modèles en comparant l'erreur issue de la validation croisée et pourrons ainsi choisir notre meilleur classifieur pour ce jeu de données. Nous ajouterons également une phase de traitement des données avec l'ACP puis comparerons les performances des classifieurs avec et sans cette phase.
 
 ### Application
 
 De la même manière que pour le jeu de données précédent, nous allons créer notre boucle de validation croisée de dix itérations et à l'intérieur de celles ci nous allons entrainer et tester nos modèles.  
-De même, nous avons également mis en place une mÃ©thode de réduction de la dimension (ACP). Les données étant déjà centrées autour de 0 et avec des valeurs assez proches, nous n'avons ni besoin de normaliser ces données ni de les redimensionner avant d'appliquer l'ACP.
+De même, nous avons également mis en place une méthode de réduction de la dimension (ACP). Les données étant déjà centrées autour de 0 et avec des valeurs assez proches, nous n'avons ni besoin de normaliser ces données ni de les redimensionner avant d'appliquer l'ACP.
 ```{r echo=FALSE}
 parole <- read.csv("data/parole_train.txt", sep =" ")
 n=nrow(parole)
@@ -239,6 +239,7 @@ CV
 CVerror
 ```
 Ici, c'est le SVM qui nous donne le meilleur résultat.
+
 ### Analyse
 Voici les résultats de précision obtenus pour les differentes méthodes testées:
 
@@ -253,12 +254,13 @@ Voici les résultats de précision obtenus pour les differentes méthodes testé
   * LDA + PCA: 0.56
   * QDA + PCA: 0.63
   
-On remarque ici que quatre modèles ont des performances très similaires Ã  savoir SVM, RandomForest, LDA ainsi que RDA. D'après les résultats, c'est le SVM qui est le meilleur classifieur pour ce jeu de données. Cependant, on voit que le LDA a un score très proche or il est souvent plus simple d'interpréter les résultats avec le LDA qu'avec le SVM. Pour ce TP, nous allons tout de même garder le meilleur score pour notre classifieur puisqu'on cherche le classifieur le plus précis possible.
-On peut remarquer qu'ici aussi en ajoutant une phase de traitement des donnÃ©es avec rÃ©duction des dimensions grÃ¢ce Ã  l'ACP, les performances des classifieurs sont diminuÃ©es. Encore une fois, ceci s'explique probablement par de la perte d'informations lors de la crÃ©ation des composantes. 
+On remarque ici que quatre modèles ont des performances très similaires à savoir SVM, RandomForest, LDA ainsi que RDA. D'après les résultats, c'est le SVM qui est le meilleur classifieur pour ce jeu de données. Cependant, on voit que le LDA a un score très proche or il est souvent plus simple d'interpréter les résultats avec le LDA qu'avec le SVM. Pour ce TP, nous allons tout de même garder le meilleur score pour notre classifieur puisqu'on cherche le classifieur le plus précis possible.
+On peut remarquer qu'ici aussi en ajoutant une phase de traitement des données avec réduction des dimensions grâce à l'ACP, les performances des classifieurs sont diminuées. Encore une fois, ceci s'explique probablement par de la perte d'informations lors de la création des composantes.  
+SVM est très efficace grâce aux transformations qu'il opère sur nos données pour détecter des relations entre nos variables et ainsi détecter plus facilement les liens entre les valeurs des paramètres de nos individus et nos classes. Cependant, cette algorithme rend l'interprétation des résultats plus compliquée. C'est pour cette raison que dans ce cas présent, le LDA serait probablement préféré pour expliquer les données plutôt que le SVM. De plus, nous disposons ici de beaucoup de prédicteurs et d'individus, SVM est particulièrement efficace dans ce contexte où il peut exister de nombreuses relations entre les différents éléments.
 
 ### Conclusion
 
-Après avoir testé différents modèles pour ce jeu de données et mis en place une phase de traitement des données, les résultats obtenus par validation croisée nous permettent de choisir le meilleur classifieur. Ainsi c'est le SVM qui nous donne le meilleur résultat avec une erreur de seulement 7.4% ce qui est assez satisfaisant.
+Après avoir testé différents modèles pour ce jeu de données et mis en place une phase de traitement des données, les résultats obtenus par validation croisée nous permettent de choisir le meilleur classifieur. Ainsi c'est le SVM qui nous donne le meilleur résultat avec une erreur de seulement 7.4% ce qui est assez satisfaisant. Le nombre important d'invidus pour entraîner nos modèles nous a permis d'obtenir des résultats plutôt satisfaisants pour les différentes méthodes.
 
 
 

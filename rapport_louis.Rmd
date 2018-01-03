@@ -7,7 +7,7 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-load("~/SY19/envlouis.RData")
+load("~/SY19/SY19_Project2/envlouis.RData")
 library(caret)
 library(car)
 library("e1071")
@@ -117,24 +117,26 @@ n=nrow(parole)
 ```
 
 ```{r echo=TRUE}
+#LDA Model with double CV
 n_folds <- 10
 folds_i <- sample(rep(1:n_folds, length.out = n))
+table(folds_i) 
 CV<-rep(0,10)
 for (k in 1:n_folds) {
   test_i <- which(folds_i == k)
   train_xy <- parole[-test_i, ]
   test_xy <- parole[test_i, ]
-  svm_train <- svm(y ~ ., data = train_xy)
-  pred_svm<-predict(svm_train, newdata = test_xy, type = "response")
-  prop.table(table(test_xy$y,pred_svm))
-  cm= as.matrix(table(test_xy$y,pred_svm))
-  CV[k]<- sum(diag(cm)) / sum(cm)
+  model_lda <- train(train_xy[,-257],train_xy$y,method='lda',trControl= trainControl(
+    method = "cv",
+    number =10,
+    verboseIter = TRUE))
+  predictions_lda<-predict.train(object=model_lda,test_xy[,-257])
+  cf<-confusionMatrix(predictions_lda,test_xy$y) 
+  CV[k]<- cf$overall["Accuracy"]
 }
 CVerror= sum(CV)/length(CV)
-CV
-CVerror
 ```
-Ici, c'est le SVM qui nous donne le meilleur rÃ©sultat.
+
 ### Analyse
 Voici les rÃ©sultats de prÃ©cision obtenus pour les differentes mÃ©thodes testÃ©es:
 
