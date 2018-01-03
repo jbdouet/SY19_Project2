@@ -50,7 +50,7 @@ folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspon
 table(folds_i) # Pas le même nombre d'éléments 
 CV<-rep(0,10)
 for (k in 1:n_folds) {# we loop on the number of folds, to build k models
-  data_to_use <- data_expressions
+  data_to_use <- data_preprocessed
   ncol <- ncol(data_to_use)
   test_i <- which(folds_i == k)
   train_xy <- data_to_use[-test_i, ]
@@ -64,7 +64,7 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   cf_svmLinear<-caret::confusionMatrix(data= predictions_svmLinear,reference=test_xy$y) 
   CV[k]<- cf_svmLinear$overall["Accuracy"]
 }
-dim(train_xy)
+
 CVerror= sum(CV)/length(CV)
 CV
 CVerror # 0.74
@@ -126,16 +126,16 @@ table(folds_i) # Pas le même nombre d'éléments
 CV<-rep(0,n_folds)
 for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   test_i <- which(folds_i == k)
-  # les datasets entre le fit et le predict doivent être les mêmes car c'est le même dataset que l'on divise en k-fold 
-  # on peut utiliser le data set complet ou seulement le train et avoir une idée finale de la performance sur le test
-  train_xy <- data_expressions[-test_i, ]
-  test_xy <- data_expressions[test_i, ]
+  data_to_use <- data_expressions
+  ncol <- ncol(data_to_use)
+  train_xy <- data_to_use[-test_i, ]
+  test_xy <- data_to_use[test_i, ]
   print(k)
-  model_rf <- caret::train(train_xy[,1:4200],train_xy$y,method='rf',trControl= trainControl(
+  model_rf <- caret::train(train_xy[,1:ncol-1],train_xy$y,method='rf',trControl= trainControl(
     method = "cv",
     number =10,
     verboseIter = TRUE))
-  predictions_rf<-predict.train(object=model_rf,test_xy[,1:4200])
+  predictions_rf<-predict.train(object=model_rf,test_xy[,1:ncol-1])
   cf_rf<-caret::confusionMatrix(data= predictions_rf,reference=test_xy$y) 
   CV[k]<- cf_rf$overall["Accuracy"]
 }
@@ -250,9 +250,10 @@ history <- model %>% fit(
   validation_split = 0.2
 )
 
+
 model %>% evaluate(X_test2, y_test_cat2)
 
-model %>% predict_classes(X_test)
+model %>% predict_classes(X_test2)
 y_test
 ################## H2O - CNN ################## 
 

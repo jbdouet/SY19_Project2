@@ -1,5 +1,5 @@
 ---
-title: "SY19 TP2"
+title: "SY19 TP6"
 output:
   pdf_document: default
   html_document: default
@@ -20,7 +20,7 @@ options(Encoding="UTF-8")
 
 ## Introduction
 
-Dans ce TP, nous disposons de trois jeux de données. Le premier représente des expressions de visage, le second des lettres de l'alphabet et le troisième des sons. Le but est alors de trouver des classifieurs efficaces pour ces trois jeux de données en utilisant des méthodes d'apprentissage supervisé.
+Dans ce TP, nous disposons de trois jeux de données. Le premier représente des expressions de visages, le second des lettres de l'alphabet et le troisième des sons. Le but est alors de trouver des classifieurs efficaces pour ces trois jeux de données en utilisant des méthodes d'apprentissage supervisé.
 
 ## Character
 ### Analyse
