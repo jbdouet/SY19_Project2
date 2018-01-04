@@ -9,7 +9,7 @@ classifieur_expressions <- function(dataset) {
   X_selpro<- Xselec[, !apply(Xselec == 0, 2, all)]
   data_selpro=data.frame(X_selpro,y=y)
   pred_pca <- predict(.GlobalEnv$prin_comp_pca, X_selpro)
-  new_data2 <-  data.frame( pred_pca$x[,1:25],y=y)
+  new_data2 <-  data.frame( pred_pca[,1:25],y=y)
   predictions<- predict(.GlobalEnv$classifieur_character, dataset)
   return(predictions)
 }
