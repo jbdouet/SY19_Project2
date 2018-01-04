@@ -108,7 +108,7 @@ dim(test)
 #################### Modele a garder #################### 
 
 data_to_use <- new_data2
-classifieur_expressions <-  caret::train(data_to_use[,1:ncol-1],data_to_use$y,method='rda',trControl=trainControl(
+classifieur_expressions <-caret::train(data_to_use[,1:ncol-1],data_to_use$y,method='rda',trControl=caret::trainControl(
   method = "cv",
   number =10,
   verboseIter = TRUE))

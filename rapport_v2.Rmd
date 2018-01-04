@@ -6,8 +6,8 @@ subtitle: "Jean-Baptiste Douet | Louis Martignoni"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-load("~/SY19/SY19_Project2/envlouis.RData")
-load("~/SY19/SY19_Project2/envJB.RData")
+load("envlouis.RData")
+load("envJB.RData")
 library(caret)
 library(car)
 library("e1071")
@@ -137,7 +137,7 @@ A l'aide de la librairie Keras, nous avons essayé de les exploiter de deux mani
 
 Avec cette méthode on définit la structure du réseau de neurones et on l'entraîne depuis le début avec les images dont on dispose.
 
-![](CNN_training.png)
+!["Courbes d'apprentissage du réseau CNN"](CNN_training.png)
 
 On se rend compte ici que le training ne se fait quasiment pas, et ce malgré une architecture relativement peu profonde.
 Cela est majoritairement dû au faible nombre d'individus dans le dataset qui ne permet pas d'entrainer de tel réseau. En effet, c'est le défaut de ce genre de méthode, elles néccéssitent de grands dataset, de l'ordre de la dizaine de millier au million en fonction du nombre de paramètres en entrée et de la complexité du réseau.
@@ -149,8 +149,8 @@ La partie déjà entrainée joue donc le rôle de "feature extractor" sur lequel
 
 Malheureusement, avec 108 individus et 6 classes, même un réseau de neurones peu profond ne converge pas. 
 
-On concluera donc d'avec un dataset avec si peu d'individus, il n'est possible d'appliquer que des méthodes de machine learning classiques, ne nécéssitant pasénormément de data.
-Ce qui fera la différence sur le résultat pour un méthode donnée sont les étapes de preprocesing et feature engineering qui vise ici à réduire lenombre de features du dataset et à en extraire du sens (interprétation).
+On concluera donc qu'avec un dataset avec si peu d'individus, il n'est possible d'appliquer que des méthodes de machine learning classiques, ne nécéssitant pas énormément de data.
+Ce qui fera la différence sur le résultat pour un méthode donnée sont les étapes de preprocessing et feature engineering qui visent ici à réduire le nombre de features du dataset et à en extraire du sens (interprétation).
 
 ## Character
 ### Analyse

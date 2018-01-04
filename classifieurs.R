@@ -4,12 +4,12 @@ classifieur_expressions <- function(dataset) {
   X <- dataset[,1:4200]
   y <-dataset$y
   # On sélectionne les parties expressives du visage 
-  Xselec <- cbind(X_expressions[301:1260],X_expressions[2460:3359])
+  Xselec <- cbind(X[301:1260],X[2460:3359])
   #parmi les données sélectionnées, on enlève aussi les pixels noirs
   X_selpro<- Xselec[, !apply(Xselec == 0, 2, all)]
   data_selpro=data.frame(X_selpro,y=y)
   pred_pca <- predict(.GlobalEnv$prin_comp_pca, X_selpro)
-  new_data2 <-  data.frame( pred_pca$x[,1:25],y=y_expressions)
+  new_data2 <-  data.frame( pred_pca$x[,1:25],y=y)
   predictions<- predict(.GlobalEnv$classifieur_character, dataset)
   return(predictions)
 }
