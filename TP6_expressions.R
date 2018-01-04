@@ -64,7 +64,7 @@ data_selproc=data.frame(X_selproc,y=y_expressions)
 #pca
 
 require(graphics)
-prin_comp <- prcomp(X_preprocessed)
+prin_comp <- prcomp(X_preprocessed,center=T )
 
 std_dev <- prin_comp$sdev
 pr_var <- std_dev^2
@@ -82,8 +82,9 @@ plot(cumsum(prop_varex), xlab = "Principal Component",
 new_data <-  data.frame( prin_comp$x[,1:25],y=y_expressions)
 
 
-prin_comp_pca <- prcomp(X_selproc)
-
+prin_comp_pca <- prcomp(X_selproc, center=T )
+dim(X_selproc)
+prcomp(X_selproc)
 std_dev2 <- prin_comp_pca$sdev
 pr_var2 <- std_dev2^2
 pr_var2[1:10]
@@ -140,13 +141,13 @@ for (k in 1:n_folds) {# we loop on the number of folds, to build k models
   test_xy1 <- data_to_use[test_i, ]
   ytest <- test_xy1$y
   print(k)
-  prin_comp <- prcomp(train_xy1[,1:ncol-1])
+  prin_comp <- prcomp(train_xy1[,1:ncol-1],center=T)
   train_xy<-data.frame( prin_comp$x[,1:25],y=ytrain)
   pred <- predict(prin_comp, test_xy1[,1:ncol-1])
   test_xy <-data.frame( pred[,1:25],y=ytest)  
   npca =25
   ncol= npca+1
-  model_rda <- caret::train(train_xy[,1:ncol-1],train_xy$y,method='rda',trControl=trainControl(
+  model_rda <- caret::train(train_xy[,1:ncol-1],train_xy$y,method='rda',trControl=caret::trainControl(
     method = "cv",
     number =10,
     verboseIter = TRUE))

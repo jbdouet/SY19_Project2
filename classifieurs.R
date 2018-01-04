@@ -10,7 +10,7 @@ classifieur_expressions <- function(dataset) {
   data_selpro=data.frame(X_selpro,y=y)
   pred_pca <- predict(.GlobalEnv$prin_comp_pca, X_selpro)
   new_data2 <-  data.frame( pred_pca[,1:25],y=y)
-  predictions<- predict(.GlobalEnv$classifieur_character, dataset)
+  predictions<- predict(.GlobalEnv$classifieur_expressions_obj, new_data2)
   return(predictions)
 }
 
@@ -18,13 +18,13 @@ classifieur_characters <- function(dataset) {
   # Chargement de l’environnement
   require(randomForest)
   load("env.Rdata",.GlobalEnv)
-  predictions<- predict(.GlobalEnv$classifieur_character, dataset)
+  predictions<- predict(.GlobalEnv$classifieur_character_obj, dataset)
   return(predictions)
 }
 classifieur_parole <- function(dataset) {
   # Chargement de l’environnement
   require('e1071')
   load("env.Rdata",.GlobalEnv)
-  predictions<- predict(.GlobalEnv$classifieur_parole, dataset)
+  predictions<- predict(.GlobalEnv$classifieur_parole_obj, dataset)
   return(predictions)
 }
