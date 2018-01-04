@@ -58,7 +58,7 @@ dim(data_preprocessed)
 
 ### Sélection des parties expressives du visage 
 
-Une autre manière de réduire la dimension du dataset est de sélectionner les parties qui expriment l'expression du visage. Nous sommes partis de l'hypothèse que les parties les plus expressives sont celles autour des yeux et de la bouche. C'est une hypothèse forte que l'on a voulu tester et puisque les visages ne bougent pas (pas de rotation, faibles translations), il suffit de sélectionner une zone de pixels.
+Une autre manière de réduire la dimension du dataset est de sélectionner les parties qui expriment l'expression du visage. Nous sommes partis de l'hypothèse que les parties les plus expressives sont celles autour des yeux et de la bouche. C'est une hypothèse forte que l'on a voulu tester et puisque les visages ne bougent pas (pas de rotation, faibles translations), il suffit de sélectionner une zone de pixels fixe pour les yeux et la bouche.
 Ci-dessous, un exemple de cette sélection sur la même image qu'affichée précédemment.
 
 ```{r, echo=F,fig.height=3, fig.width=10}
@@ -87,17 +87,17 @@ plot(cumsum(prop_varex), xlab = "Principal Component",
 
 ```
 
-Pour les courbes affichées nous avons choisi 25 composantes principales ce qui visuellement et après plusieurs tests nous est apparu comme le meilleur compromis.
+Pour les courbes affichées nous avons choisi 25 composantes principales ce qui visuellement ainsi qu'après plusieurs tests nous est apparu comme le meilleur compromis.
 
 ## Classification 
 
 Afin d'obtenir le meilleur résultat de classification nous avons testé plusieurs classifieurs sur différents types de vecteurs en entrée. En effet, tous les algorithmes ne réagissent pas de la même manière aux étapes de preprocessing présentées. 
-Différentes combinaison parmi ces étapes ont donc été testées en fonction des propriétés des classifieurs.
+Différentes combinaisons parmi ces étapes ont donc été testées en fonction des propriétés des classifieurs.
 
 ## Analyse
-Voici les résultats (la précision obtenue) pour les differentes méthodes testées.
-Au niveau du preprocessing, pour toutes les méthodes, les pixels noirs ont été retirés. 
-Les autres étapes ont été testées en même temps que les classifieurs comme cela:
+
+Au niveau du preprocessing, pour toutes les méthodes testées, les pixels noirs ont été retirés. 
+Voici les résultats (la précision obtenue) pour les differentes combinaisons entre les méthodes testées et les étapes de preprocessing.
 
   * SVM linear: 0.73
   * SVM polynomial: 0.70
@@ -108,21 +108,24 @@ Les autres étapes ont été testées en même temps que les classifieurs comme 
   
   * SVM linear+ PCA: 0.69
   * Naive Bayes + PCA: 0.69
-  * RDA + PCA :0.82
+  * RDA + PCA :0.75
   * RandomForest + PCA : 0.65
   * XGBOOST + PCA: 0.71
   
   
   * SVM linear + Sélection des zones expressives+ PCA: 0.69
   * Naive Bayes + Sélection des zones expressives+ PCA: 0.72
-  * RDA + Sélection des zones expressives + PCA :0.78
+  * RDA + Sélection des zones expressives + PCA :0.77
   * RandomForest + Sélection des zones expressives + PCA : 0.68
   * XGBOOST+ Sélection des zones expressives + PCA: 0.71
 
 ## Observations 
 
-Globalement, la sélections des zones expressives du visage couplée au PCA améliore les performances par rapport au PCA normal. A l'exception du RDA (regularized discriminant analysis) qui a de meilleures performances lorsque seul le PCA est appliqué.
-On notera que les performances algorithmes de SVM linéaire et de random forest 
+Globalement, la sélections des zones expressives du visage couplée au PCA améliore les performances par rapport au PCA normal. Cela valide notre hypothèse sur le fait que les yeux et la bouche sont les zones expressives du visage et que sélectionner ces zones aide à réduire le bruit dans les données.
+
+C'est la combinaison PCA + Sélection des zones expressives + RDA qui a les meilleures performances.
+
+On notera que les performances des algorithmes de SVM linéaire et de random forest réagissent mal à la réduction de la dimension du vecteur d'entrée par PCA.
 
 ## Autres méthodes
 
@@ -144,8 +147,10 @@ Cela est majoritairement dû au faible nombre d'individus dans le dataset qui ne
 Le transfer learning exploite un réseau de neurones profond déjà pré-entrainé afin de palier au petit nombre d'individus dans un dataset. 
 La partie déjà entrainée joue donc le rôle de "feature extractor" sur lequel on réentraine un réseaux de neurones peu profond.
 
-Malheureusement, avec 108 individus, même un réseau de neurones peu profond ne converge pas. 
+Malheureusement, avec 108 individus et 6 classes, même un réseau de neurones peu profond ne converge pas. 
 
+On concluera donc d'avec un dataset avec si peu d'individus, il n'est possible d'appliquer que des méthodes de machine learning classiques, ne nécéssitant pasénormément de data.
+Ce qui fera la différence sur le résultat pour un méthode donnée sont les étapes de preprocesing et feature engineering qui vise ici à réduire lenombre de features du dataset et à en extraire du sens (interprétation).
 
 ## Character
 ### Analyse

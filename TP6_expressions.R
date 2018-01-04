@@ -1,7 +1,8 @@
 ###### Classifieurs sur les expressions du visage ######  
 library(caret)
 set.seed(101)
-
+load("env.Rdata",.GlobalEnv)
+load("envJB.Rdata",.GlobalEnv)
 #### Obtention des données 
 data_expressions <- read.csv("data/expressions_train.txt",sep = " ")
 
@@ -54,8 +55,8 @@ par(mfrow = c(1, 2))
 image(t(Ieyes),col=gray(0:255 / 255))
 image(t(Imouth),col=gray(0:255 / 255))
 
-Xselected <- cbind(X_expressions[301:1260],X_expressions[2601:3260])
-
+#Xselected <- cbind(X_expressions[301:1260],X_expressions[2601:3260])
+Xselected <- cbind(X_expressions[301:1260],X_expressions[2460:3359])
 #parmi les données sélectionnées, on enlève aussi les pixels noirs
 X_selproc<- Xselected[, !apply(Xselected == 0, 2, all)]
 data_selproc=data.frame(X_selproc,y=y_expressions)
@@ -63,7 +64,7 @@ data_selproc=data.frame(X_selproc,y=y_expressions)
 #pca
 
 require(graphics)
-prin_comp <- prcomp(X_selproc)
+prin_comp <- prcomp(X_preprocessed)
 
 std_dev <- prin_comp$sdev
 pr_var <- std_dev^2
@@ -77,9 +78,125 @@ plot(prop_varex, xlab = "Principal Component",
 plot(cumsum(prop_varex), xlab = "Principal Component",
      ylab = "Cumulative Proportion of Variance Explained",
      type = "b")
+
+new_data <-  data.frame( prin_comp$x[,1:25],y=y_expressions)
+
+
+prin_comp_pca <- prcomp(X_selproc)
+
+std_dev2 <- prin_comp_pca$sdev
+pr_var2 <- std_dev2^2
+pr_var2[1:10]
+prop_varex2 <- pr_var2/sum(pr_var2)
+
+plot(prop_varex2, xlab = "Principal Component",
+     ylab = "Proportion of Variance Explained",
+     type = "b")
+
+plot(cumsum(prop_varex2), xlab = "Principal Component",
+     ylab = "Cumulative Proportion of Variance Explained",
+     type = "b")
+
+new_data2 <-  data.frame( prin_comp_pca$x[,1:25],y=y_expressions)
+
+pred <- predict(prin_comp_pca, X_selproc[1:50,])
+dim(pred)
+test <- data.frame( pred[,1:25],y=y_expressions[1:50])
+dim(test)
 ############################### Models ############################### 
 
+#################### Modele a garder #################### 
 
+data_to_use <- new_data2
+classifieur_expressions <-  caret::train(data_to_use[,1:ncol-1],data_to_use$y,method='rda',trControl=trainControl(
+  method = "cv",
+  number =10,
+  verboseIter = TRUE))
+
+
+dim(test_xy1)
+test_xy <- predict(prin_comp_pca,test_xy1)
+predictions_rda<-predict.train(object=classifieur_expressions,test_xy)
+predictions_rda
+cf_rda<-caret::confusionMatrix(data= predictions_rda,reference=test_xy1$y) 
+cf_rda$overall["Accuracy"]
+cf_rda
+length(predictions_rda)
+length(new_data$y[1:25])
+dim(new_data[1:25,])
+
+#################### RDA + nouveau pca #################### 
+
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
+table(folds_i) # Pas le même nombre d'éléments 
+CV<-rep(0,10)
+for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  data_to_use <- data_selproc
+  ncol <- ncol(data_to_use)
+  test_i <- which(folds_i == k)
+  train_xy1 <- data_to_use[-test_i, ]
+  ytrain <- train_xy1$y
+  test_xy1 <- data_to_use[test_i, ]
+  ytest <- test_xy1$y
+  print(k)
+  prin_comp <- prcomp(train_xy1[,1:ncol-1])
+  train_xy<-data.frame( prin_comp$x[,1:25],y=ytrain)
+  pred <- predict(prin_comp, test_xy1[,1:ncol-1])
+  test_xy <-data.frame( pred[,1:25],y=ytest)  
+  npca =25
+  ncol= npca+1
+  model_rda <- caret::train(train_xy[,1:ncol-1],train_xy$y,method='rda',trControl=trainControl(
+    method = "cv",
+    number =10,
+    verboseIter = TRUE))
+  predictions_rda<-predict.train(object=model_rda,test_xy[,1:ncol-1])
+  cf_rda<-caret::confusionMatrix(data= predictions_rda,reference=test_xy$y) 
+  CV[k]<- cf_rda$overall["Accuracy"]
+}
+
+CVerror= sum(CV)/length(CV)
+CV
+CVerror # 0.74
+#################### RDA + PCA #################### 
+
+n_folds <- 10
+folds_i <- sample(rep(1:n_folds, length.out = n)) # !!! le ntrain doit correspondre à la taille du dataset que l'on utilisera dans la boucle de cross validation 
+table(folds_i) # Pas le même nombre d'éléments 
+CV<-rep(0,10)
+for (k in 1:n_folds) {# we loop on the number of folds, to build k models
+  data_to_use <- new_data
+  ncol <- ncol(data_to_use)
+  test_i <- which(folds_i == k)
+  train_xy <- data_to_use[-test_i, ]
+  test_xy <- data_to_use[test_i, ]
+  print(k)
+  model_rda <- caret::train(train_xy[,1:ncol-1],train_xy$y,method='rda',trControl=trainControl(
+    method = "cv",
+    number =10,
+    verboseIter = TRUE))
+  predictions_rda<-predict.train(object=model_rda,test_xy[,1:ncol-1])
+  cf_rda<-caret::confusionMatrix(data= predictions_rda,reference=test_xy$y) 
+  CV[k]<- cf_rda$overall["Accuracy"]
+}
+
+CVerror= sum(CV)/length(CV)
+CV
+CVerror # 0.74
+
+data_to_use <- new_data2
+classifieur_expressions <-  caret::train(data_to_use[,1:ncol-1],data_to_use$y,method='rda',trControl=trainControl(
+  method = "cv",
+  number =10,
+  verboseIter = TRUE))
+
+predictions_rda<-predict.train(object=classifieur_expressions,test[,1:25])
+cf_rda<-caret::confusionMatrix(data= predictions_rda,reference=test$y) 
+cf_rda$overall["Accuracy"]
+cf_rda
+length(predictions_rda)
+length(new_data$y[1:25])
+dim(new_data[1:25,])
 #################### SVM linear #################### 
 #data_expressions$y <- as.factor(as.integer(data_expressions))
 
